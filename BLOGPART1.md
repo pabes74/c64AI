@@ -1,108 +1,87 @@
-# Part 1 – Can AI Help Me Write a Commodore 64 Game?
+# Part 1: Can AI Help Me Write a Commodore 64 Game?
+
 ## Nostalgia as a Starting Point
 
-Some computers never really let go of you. For me, that is without a doubt the Commodore 64. Not because I owned one myself — quite the opposite — but more because I didn’t. As a child, I was deeply impressed by games. The sound, the sprites, the atmosphere. While many classmates had a C64 at home, I grew up with an MSX. Also a beautiful system, but different. Fewer games, less mystique. So I spent a lot of time at friends’ houses, staring at that iconic blue startup screen and waiting endlessly for a game to load from cassette.
+Some computers never really let go of you. For me, that is without a doubt the Commodore 64. Not because I owned one myself—quite the opposite—but because I didn’t. 
 
-The home computer — and especially the C64 — felt like magic. Games that were bigger, smoother, and more impressive than anything I knew. Games appeared that made us think: it will never get more beautiful or realistic than this.
+As a child, I was captivated by the magic of 8-bit machines: the distinct SID chip synthesis, the hardware sprites, and that unmistakable atmosphere. While my classmates were loading games on their C64s, I grew up with an MSX. It was a beautiful system, but it felt different—less "mystique," fewer games. I spent countless hours at friends' houses, staring at that iconic blue startup screen, waiting with bated breath for a cassette tape to load.
+
+The C64 felt like high technology. It was a machine where games felt bigger, smoother, and more "professional" than anything else. Back then, we truly believed it would never get more realistic than this.
 
 ## Programming… As Far as I Got
 
-Like many others, I once started programming in BASIC. PRINT statements, GOTOs, simple loops. Fun and educational — but I never moved beyond the basics. The truly interesting things — fast games, demos with music and scrolling text — those were written in machine code. And machine code was intimidating. I read things about registers, 
-memory addresses and hexadecimal values. It felt like a different world. A world I never truly entered. BASIC was safe. Machine code was for “real programmers”. And then life moved on. Studies, work, cloud, DevOps, C#, infrastructure as code. The C64 faded into the background as pure nostalgia. Until now , specialy the [re-release of the C64](https://www.commodore.net/product-page/commodore-64-ultimate-basic-beige-batch2) sparked my intrest again. 
+Like many kids of that era, I dabbled in BASIC. `PRINT` statements, `GOTO` commands, and simple loops were my playground. It was fun, but I never peaked over the wall. The truly legendary stuff—the high-speed games, the "cracktro" demos with scrolling text and complex music—was written in machine code.
+
+To a kid, machine code was intimidating. I saw snippets of code filled with registers, memory addresses, and hexadecimal values (like `$FF`). It felt like a different dimension. BASIC was safe; machine code was for "real programmers." 
+
+Eventually, life moved on. I became a "real programmer," but in a world of C#, DevOps, Cloud infrastructure, and Kubernetes. The C64 faded into a nostalgic memory—until the [re-release of the C64](https://www.commodore.net/product-page/commodore-64-ultimate-basic-beige-batch2) sparked my interest again.
 
 ## The Question That Lingered
 
-*What if I tried again — now?* Not as a child with a manual and infinite patience, but as an experienced software engineer — with a new tool: AI. The question I asked myself was surprisingly simple:
+*What if I tried again—now?* I’m no longer a child with just a manual and infinite patience. I’m an experienced software engineer with a powerful new ally: AI. I asked myself a simple, perhaps naive, question:
 
-> Would AI allow me to write something in machine code for the Commodore 64 — without really understanding that machine code myself?
+> **Can AI allow me to write machine code for the Commodore 64 without me actually understanding that machine code?**
 
-I do not understand C64 assembly. Not really. And for this experiment, that was intentional. I wanted to experience what it’s like to vibe code at a very low level — to steer, prompt, and iterate without fully grasping every instruction or hardware detail. To see whether intent, feedback, and iteration could substitute for deep domain knowledge. I'm not trying to build a new masterpiece next-level game, but just something that runs. But just something built by AI — even if I couldn’t fully explain every byte of it.
+I wanted to "vibe code" at the lowest possible level. I wanted to see if intent, feedback, and iteration could substitute for deep domain knowledge. I wasn't looking to build a masterpiece—just something that *runs*. Something built by an LLM, even if I couldn’t fully explain every byte it generated.
 
 ### Constraints of the Experiment
 
-To keep myself honest, I added two deliberate constraints.
+To keep myself honest, I set three rules:
 
-1. **A strict time box**
+1. **A Strict Time Box:** I gave myself one month. Any longer and I’d inevitably start "cheating" by actually learning 6502 assembly properly. This experiment is about the AI, not my ability to study opcodes.
+2. **Gradual "Intelligence" Scaling:** I started with generic, out-of-the-box AI models. I would only move to "heavy hitters" (like specialized coding models or Claude Code) if the basic models hit a hard ceiling.
+3. **Increasing Difficulty:** We start with "Hello World." If that works, we keep pushing until the machine (or the AI) breaks.
 
-I gave myself one month. If it took longer than that, I knew exactly what would happen:
-I’d simply start learning C64 assembly properly — reading manuals, studying opcodes, and going deep.
-That would be interesting, but it would defeat the purpose of the experiment. This wasn’t about learning assembly.
-This was about discovering how far AI could take me without that learning.
-
-2. **Gradually “smarter” models and adding more context**
-
-I also decided not to start with specialized tools. The plan was simple: Start with default, generic AI models
-See how far I could get and only escalate when it got stuck. First by add more context and eventualy if needed, I would move toward models more tailored to software development and code generation — things like OpenCode, Claude Code or OpenAI Codex CLI-style models — but only as a next step, not a given.
-
-3. **Asking increasingly more difficuly questions.**
-
-So starting with a simple "hello world" scroller is just the beginning. If this is succesful then i'll figure out some fancier request. 
+---
 
 ## Naive Optimism: “Just Do a Hello World”
-As often happens in modern software development, I started out quite naively. My first prompt was essentially:
 
+In modern development, we’re spoiled. My first prompt was essentially: 
 > *“Write a Hello World scroller in C64 machine code.”*
 
-And that’s where reality kicked in. Although an generic modelc like ChatGPT is able to create some code, i needed to figure out how and where to run this code. I was not going for typing it in a c64. I needed some sort of development environment. So I didn’t get stuck on the code itself, but I got stuck immediately on the tooling.
+Reality hit immediately. While ChatGPT could spit out assembly code, I had no idea how to actually *run* it. I wasn't about to type hexadecimal values into a physical C64. I needed a modern dev-stack for a 40-year-old computer.
 
 ## Tooling: Where Do You Even Start?
 
-In the 1980s, people programmed directly on the machine itself. Today we use cross-development tooling, which makes things considerably easier than they were back then. So i asked chatGPT the following:
+In the '80s, you programmed on the metal. Today, we use **cross-development**. After some trial and error, I landed on a stack that makes 8-bit coding feel surprisingly like my day job:
 
-> *"When developing a C64 machine code application on a Windows machine what is the best development stack?"*
-
-After some fiddeling and experimenting with options mentioned in the result , I roughly ended up with the following stack:
-
-- Kick Assembler – a modern assembler for 6502/6510 code
-https://theweb.dk/KickAssembler/Main.html#frontpage
-
-- Visual Studio Code – for editing, syntax highlighting, and structure
-
-- Kick Assembler Studio – a VS Code plugin for C64 development
-https://marketplace.visualstudio.com/items?itemName=sanmont.kickass-studio
-
-- VICE – an emulator to actually run the code
-https://vice-emu.sourceforge.io/
+| Tool | Purpose |
+| :--- | :--- |
+| [**Kick Assembler**](https://theweb.dk/KickAssembler/Main.html#frontpage) | A powerful, modern Java-based assembler for 6502/6510 code. |
+| **VS Code** | My familiar editor for syntax highlighting and structure. |
+| [**KickAssembler Studio**](https://marketplace.visualstudio.com/items?itemName=sanmont.kickass-studio) | A VS Code plugin that bridges the editor and the compiler. |
+| [**VICE**](https://vice-emu.sourceforge.io/) | The gold-standard emulator to actually run the code. |
 
 
-To efficiently develop C64 code, I use Kick Assembler together with the VICE emulator, controlled from Visual Studio Code. In practice, this means that Kick Assembler compiles your .asm file into a .prg file. VS Code invokes the assembler via a simple build task and eventualy VICE is launched automatically with the generated .prg. After setting up the tooling, I could press F5 to compile and immediately run the result in the VICE emulator. It almost feels like modern software development — except it’s targeting an 8-bit machine from 1982.
+
+Setting this up was the first real hurdle. I had to configure VS Code tasks so that hitting **F5** would trigger Kick Assembler to compile my `.asm` into a `.prg` file and automatically launch VICE. It felt like modern CI/CD, only the target environment had 64KB of RAM instead of an Azure cluster.
 
 ## Then Came the AI
 
-So at this point i had a working tooling pipeline which supposably should be able to build and run generated C64 code. So back to the earlier generated code. After a few times going back and forth i has some code which compiled and the C64 emulator would start. Then i would load and it ended with a "Ready" prompt.. Nothing happing.. I tried to do an Run command.. but nothing happend. I thought that i need to supply more context to the AI and this turned out to be crucial.
+With the pipeline ready, I fed the AI-generated code into the assembler. It compiled! I launched the emulator... and was greeted with a blank blue screen and a "READY" prompt. Nothing happened.
 
-Once I started feeding the AI proper reference material, things changed. In particular:
+This was a classic "gotcha" in the world of 8-bit development. On a Commodore 64, the machine starts in a BASIC environment, and machine code doesn’t just execute itself upon loading. You typically need a "BASIC stub"—a tiny line of BASIC code (like `10 SYS 2048`) that tells the processor to jump to the specific memory address where your machine code lives. KickAssembler has a standard, elegant solution for this using the `BasicUpstart2` macro. After feeding the AI more documentation, it correctly identified this requirement and added the necessary header, finally bridging the gap between the blue startup screen and my actual code.
 
-- **Commodore 64 Programmer’s Reference Guide**
-- **KickAssembler Manual**
+I realized I was missing **context**. AI models know "code," but they don't necessarily know the quirks of the C64 hardware without help. I started feeding the AI reference material by uploading key documentation to the chat:
+* **The C64 Programmer’s Reference Guide**
+* **The KickAssembler Manual**
 
-Especially the Commodore 64 Programmer’s Reference Guide — a book many people forgot in a desk drawer decades ago — had a noticeable impact on the quality and correctness of the generated code.
+This was the turning point. By providing the "rules of the world," the AI's output improved drastically. However, we hit another problem. My "Hello World" appeared as weird symbols. As a C# dev, I take ASCII for granted. The C64 uses **PETSCII**. When I pointed this out to the AI, it corrected the string encoding to lowercase (which maps differently in PETSCII). 
 
-The ending up with a "READY" prompt problem appeared to some standard issue which kickassembler has an solution for. So i finally saw something appearing on the screen. But is was not "Hello World" as i expected but it was gibberish. I went back and forth a couple of times but didn't help. So i couldn't help myself and checkout the code. Although i don't understand the assembly part i did see the printed string was in all CAPS. The C64 didn't have ASCII as all machine have since the late 80's but it had PETSCII which was something different. So when i asked chatGpt about this i changed the code to lowercase.
+Finally, it worked. A "Hello World" scroller, written in a language I don't speak, running on a machine from 1982. You can check out the "vibe-coded" source at [github.com/pabes74/c64AI](https://github.com/pabes74/c64AI).
 
-At this point things started to work. The result of which a you can find in the github.com/pabes74/c64AI repo. The hello.asm should build and display is "hello world" scroller. So even without understanding C64 assembly, I could still make something real.
+---
 
 ## The Road Ahead: Can We Actually Build a Game?
 
-With a simple "Hello World" finally flickering on the screen, the proof of concept is done. I've proven that with the right tooling and enough context, I can coax an AI into writing 6502 assembly that actually *works*. But let’s be honest: printing a text string is a long way from a playable game.
+The proof of concept is done. I’ve proven that with the right tooling and enough context, I can coax an AI into writing working 6502 assembly. But printing text is easy. A game is another beast entirely.
 
-The real experiment starts now. I’ve set my stopwatch for **one month**, and the goal is to see just how deep the rabbit hole goes. Here is what’s on the horizon for Part 2:
+For **Part 2**, the goal is to see where "vibe coding" hits a brick wall. I'll be tackling the "Fantastic Four" of C64 coding:
+* **Sprites:** Moving hardware objects without destroying the background.
+* **Smooth Scrolling:** Achieving that buttery 8-bit motion.
+* **The Game Loop:** Managing logic, input, and rendering simultaneously.
+* **The SID Chip:** Can an AI actually compose a tune for the legendary sound chip?
 
-### Pushing the Models to the Limit
-So far, I’ve been using generic AI models. They’re great for "Hello World," but will they crumble when asked to manage memory registers or timing-sensitive interrupts? I want to see exactly where "vibe coding" hits a brick wall. Will I need to call in the "heavy hitters" like specialized coding models, or can I "prompt engineer" my way through the limitations of a general-purpose LLM?
+The biggest question remains: **Where does it break?** At some point, the lack of deep domain knowledge *must* become a liability. I’m looking for that tipping point where the AI gives me code that looks "technically correct" but is fundamentally broken for a machine with only 64KB of RAM.
 
-### The fantastic four of C64 Coding
-To make this look like a real game, I need to tackle the classics that defined the era:
-*   **Sprites:** Moving objects that don't mess up the background. The signature magic of the VIC-II chip.
-*   **Smooth Scrolling:** No more static screens. I want that buttery-smooth 8-bit motion.
-*   **The Game Loop:** Choreographing inputs, logic, and rendering without the whole thing crashing into a pile of assembly errors.
-*   **Music:** The c64 contained the legendary SID chipset which generated great music, will AI be able to generate a tune?
-
-### The "Vibe Coding" Reality Check
-The biggest question remains: **where does it break?** At some point, the lack of deep domain knowledge *must* become a liability. I’m looking for that tipping point where the AI gives me code that looks "technically correct" but is fundamentally broken for a machine with only 64KB of RAM.
-
-The journey from a "READY" prompt to a moving character is going to be full of PETSCII gibberish, memory collisions, and probably a lot of trial and error. I forsee a future where i did create a lot of stuff, which doesn't work as intended but i'm unable to fix this because i don't understand the basics.
-
-**Stay tuned for Part 2 – where we find out if AI can actually play with the legends of the 80's.**
-
-To be continued.
+**Stay tuned for Part 2—where we find out if AI can truly play with the legends of the '80s.**

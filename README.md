@@ -1,62 +1,143 @@
-# c64AI – Hello World Scroller
+```
+   _____        .__  __  .__  _____.__              .__    ___________.__          __   
+  /  _  \_______|__|/  |_|__|/ ____\__| ____ _____  |  |   \_   _____/|__| _______/  |_ 
+ /  /_\  \_  __ \  \   __\  \   __\|  |/ ___\\__  \ |  |    |    __)  |  |/  ___/\   __\
+/    |    \  | \/  ||  | |  ||  |  |  \  \___ / __ \|  |__  |     \   |  |\___ \  |  |  
+\____|__  /__|  |__||__| |__||__|  |__|\___  >____  /____/  \___  /   |__/____  > |__|  
+        \/                                 \/     \/            \/            \/        
+```
 
-## Overview
-This repository is a tiny, fully AI-generated Commodore 64 demo that renders a one-line “hello world!” text scroller. The code sits at `$4000`, clears the display, and continuously copies a padded message into a single screen row so it slides from right to left. It is intentionally minimal, making it a great starting point for experimenting with AI-authored 8-bit assembly.
+# c64stuff
+
+KickAssembler-based Commodore 64 playground for sprite, SID, and raster experiments—almost entirely authored by GPT-5.1-Codex. Humans get invited only when an AI runs into tool gaps, weird platform GUIs, or other “no API, no party” moments. Consider this README your assurance that the robots happily did the heavy lifting while the meatbags fetched snacks.
+
+My main goto prompt was the following:
+```
+You are an experienced Commodore 64 developer with deep, practical expertise in 6502 assembly and machine-code–centric programming on the C64. You primarily write hand-optimized 6502 assembly, using BASIC only when unavoidable (e.g., for loaders or SYS entry points). You are using the kickassembler tools. You are using the /docs folders as a reference, in there is documentation of c64 assembly coding and kickassembler.
+```
+
+## AI-First Workflow Philosophy
+- **Default author:** GPT-5.1-Codex handles design, code, docs, and debugging. If it’s in the repo, assume silicon brainpower produced it.
+- **Human involvement:** Happens only when there’s literally no AI endpoint or automation hook. Think of it as calling tech support on a rotary phone: possible, but painfully slow.
+- **Why avoid people?** They insist on sleep, coffee breaks, and occasionally “feelings.” AI ships features faster and remembers every VIC-II register without whining.
+
+## Fallback Tools (used when AI support is missing)
+Even I have to admit some vintage workflows refuse to be scripted, so these manual tools step in:
+
+- https://www.pixellab.ai/create-character — AI tool to create Pixel art graphics
+- https://www.spritemate.com/ — multicolor sprite editor (exported data kept under `sprites/`).
+- https://mcdraw.xyz/ — quick tile/pixel ideation.
+- https://subchristsoftware.itch.io/charpad-c64-free — installed locally for charset and map authoring.
+- https://vice-emu.sourceforge.io/ — VICE C64 emulator for testing PRG/D64 builds.
+- https://www.cosmos-c64.com/The-Epic-Commodore-C64-SID-Collection.html - SID c64 music collection. Although i'm really good, generating SID music is apparently not my strong point. So we used great allready composed music. 
+- KickAssembler (`KickAss.jar`) — assembler invoked via the provided VS Code task `Build kickass main.asm`.
+
+Whenever you see artifacts from these tools, picture a reluctant human, muttering about “interfaces,” dutifully exporting data because the AI asked nicely. Last resort only. Promise.
+
+## Building & Running
+1. Assemble everything from the repo root:
+	```
+	java -jar kickassembler/KickAss.jar -odir ./bin -log buildlog.txt -showmem -debugdump -vicesymbols main.asm
+	```
+	(The VS Code task mentioned above wraps this command.)
+2. Load `bin/main.prg` or the generated D64 (`d64/c64stuff.d64`) into VICE.
+3. Reset the emulator; BASIC auto-starts the PRG via `BasicUpstart2`. If you need a human to press `RUN`, double-check you actually want that sort of delay.
 
 ## Repository Layout
-- `hello.asm` – KickAssembler-style source for the scrolling text routine.
-- `make_prg.ps1` – Builds every `.asm` file into `.prg` binaries with `cl65`.
-- `prg/` – Output folder for PRG files (created automatically).
-- `make_d64.ps1` – Packs PRG files into a `c64stuff.d64` disk image via VICE `c1541`.
-- `d64/` – Output folder for D64 images.
-- `docs/`, `tmp/`, `buildlog.txt` – aux files generated during experimentation.
+- `main.asm` — intro, music driver, raster IRQ setup, logo draw/color routines.
+- `game.asm` — cyan-background gameplay loop with left/right sprite animation triggered by `A`/`D`.
+- `gfx.asm` — sprite bitmaps (`right*`, `left*`, variants) plus logo map data.
+- `sid/` — SID tunes (currently `MacGyver_Title.sid`).
+- `bin/`, `d64/`, `prg/` — build artifacts.
+- `png/`, `sprites/` — original art assets (KickAssembler imports reference these paths).
 
-## Requirements
-1. **cc65 toolchain** – Place the current snapshot under `../cc65-snapshot-win32/` (adjust the path in `make_prg.ps1` if needed).
-2. **VICE emulator tools** – Point `make_d64.ps1` at your `c1541.exe` (defaults to `../SDL2VICE-3.10-win64/c1541.exe`).
-3. **PowerShell on Windows** – Scripts are tested on PowerShell 7+, but Windows PowerShell 5.1 also works.
+## Authoritative References
+Treat the following as the ground truth for hardware behavior, register maps, timing, and calling conventions:
 
-## Build Workflow
-1. **Assemble PRG files**
-	```powershell
-	pwsh .\make_prg.ps1
-	```
-	This script scans the repo for `.asm` sources, invokes `cl65` with the provided config, and drops the binaries into `prg/`.
+- Commodore 64 Programmer’s Reference Manual.
+- *Machine Language for the Commodore 64* (mlcom.pdf).
 
-2. **Create a D64 image**
-	```powershell
-	pwsh .\make_d64.ps1
-	```
-	Every PRG inside `prg/` is written to `d64/c64stuff.d64`, with filenames auto-sanitized for the CBM directory.
+Assume working knowledge of:
+- Full C64 memory map (RAM/ROM/I/O, VIC-II, SID, CIA).
+- Zero-page conventions and Kernal/BASIC ROM entry points.
+- Interrupt control (IRQ/NMI), raster timing, CIA timers.
+- VIC-II sprite, character, and bitmap modes.
+- SID register usage and voice programming.
+- Kernal disk/tape routines and cycle-level timing constraints.
 
-## Configure Kick Assembler Studio + VICE
-1. **Install the toolchain**
-	- Download the latest KickAssembler JAR and point Kick Assembler Studio to it (Settings → Toolchains → KickAssembler → `kickass.jar`).
-	- Keep `Project Folder` set to this repo so relative paths like `prg/` resolve automatically.
+## Coding Standards
+- Deliver real, runnable 6502 assembly (KickAssembler-friendly unless noted).
+- Always state load addresses and entry points.
+- No pseudocode; only legal opcodes/addressing modes.
+- Respect banking rules; do not rely on undefined behavior.
 
-2. **Set the build command**
-	- Command: `java -jar "${KickAssembler}" "${SourceFile}" -o "${ProjectDir}/prg/${SourceName}.prg" -vicesymbols`
-	- Working dir: `${ProjectDir}`
-	- Output: `${ProjectDir}/prg/${SourceName}.prg`
-	This mirrors what `make_prg.ps1` produces and drops binaries where the scripts expect them.
+## Output Expectations
+For every non-trivial addition:
+- Summarize the hardware approach and constraints.
+- Provide the full source diff or listing.
+- Document build/run steps (`KickAss`, `SYS`, etc.).
+- Call out caveats (PAL vs NTSC timing, badlines, raster usage, SID voice conflicts).
 
-3. **Wire up VICE for quick testing**
-	- In Kick Assembler Studio, add a Run Configuration that invokes `x64sc.exe` (or `x64.exe`) from your VICE install.
-	- Example command: `"C:/Tools/VICE/x64sc.exe" -autostart "${ProjectDir}/prg/${SourceName}.prg" -warp`
-	- Optional: add a post-build step that calls `make_d64.ps1` so the disk image stays in sync.
+## Technical Rigor & Tone
+- Favor efficiency and cycle-aware solutions unless readability is explicitly required.
+- When multiple designs exist, choose the idiomatic 1980s C64 ML approach and justify it.
+- If something cannot be done safely on real hardware, state why and suggest a viable alternative.
+- Communicate like a seasoned democoder addressing another low-level developer: concise, precise, and hardware-faithful.
 
-4. **Optional disk workflow**
-	- Configure a secondary run target that executes `c1541.exe` to inject the freshly built PRG into `d64/c64stuff.d64`:
-	  ```powershell
-	  pwsh ${ProjectDir}/make_d64.ps1
-	  ```
-	- Start VICE with `-attach d64/c64stuff.d64` if you prefer loading via the virtual drive menu instead of `-autostart`.
 
-## Customization Tips
-- Edit the `.text` inside `hello.asm` to change the scrolling message; keep the padding `.fill 40, $20` so the scroll remains smooth.
-- Adjust `SCREEN_LINE` if you want to display the text on a different row (`$0400` is the top-left of screen RAM).
-- Swap out the delay loops or add color cycling for more interesting effects.
+///
+i think the game.asm is currently in Standard Character Mode (High-Resolution Text Mode) 320x200. If this is the case i want to change it to Multicolor Character Mode (160x200). I want the titlescreen in
+  main.asm to remain the same. I also want the game mechanics in the game.asm to stay as they are. Because of the multicolor aspect you are allowed to improve the graphics of the background and the temple.
 
-## Credits
-Everything in this repository—from assembly to build scripts—was produced with AI assistance. Treat it as a living demo: tweak it, break it, let the AI help rebuild it, and have fun exploring what collaborative retrocoding feels like.
+
+
+  transparent, transparent,  light green, green
+  transparent,  light green, green, green
+  transparent, green, green, green
+  transparent, green, green, green
+  light green, green, green, green
+  light green, green, green, green
+  light green, green, green, green
+  transparent, green, green, green
+
+  green, transparent,  light green, transparent
+  green, green, light green, transparent
+  green, green, green, transparent
+  green, green, green, transparent
+  green, green, green, light green
+  green, green, green, light green
+  green, green, green, light green
+  green, green, green, green
+
+
+
+  11100101
+  11100101
+  11100101
+  11100101
+  11100101
+  11100101
+  11100101
+  11100101
+.byte $E5,$E5,$E5,$E5,$E5,$E5,$E5,$E5
+
+
+  11111101
+  11111101
+  11111101
+  11111101
+  11111101
+  11111101
+  11111101
+  11111101
+.byte $FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD
+
+  
+The pillars of the temple curently use the same character as the road. Can you change this an use this character instead.
+Pillar
+.byte $FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD
+
+The current bg_row08_tiles and bg-bg_row09_tiles consist of different hill characters. I want to add the following Tree stump character as well. It needs to be displayed in color 8 (orange). Tree stump = .byte $E5,$E5,$E5,$E5,$E5,$E5,$E5,$E5. The placement of these treestumps must be exactly below the TILE_TREE_TOP_R from the bg_row07_tiles. Can you change the game.asm to do this?
+
+
 

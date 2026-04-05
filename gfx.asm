@@ -3,9 +3,7 @@
 
 * = $2000
 LogoChars:
-    // Logo charset binary (png/Logo - Chars.bin) is not committed.
-    // Filled with zeros so the build succeeds; regenerate from source PNG to restore logo visuals.
-    .fill 2048, $00
+    .import binary "png/Logo - Chars.bin"
 
 * = GAME_BG_CHARSET_BASE
 // Gameplay background tileset (256 chars @ $2800)
@@ -94,6 +92,40 @@ game_bg_charset:
 
 // tile 29 ($1d): tree fill — solid green (%11 in every pixel)
     .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+
+// N (screen code $1e) — used in "LUNG" boss HUD
+    .byte $c6,$c6,$e6,$f6,$de,$ce,$c6,$00
+
+// tile 31 ($1f): placeholder (unused — keeps slot alignment)
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+
+// HUD level display characters (hi-res, color RAM bit3=0)
+// L (screen code $20)
+    .byte $60,$60,$60,$60,$60,$60,$7e,$00
+// V (screen code $21)
+    .byte $66,$66,$66,$66,$3c,$3c,$18,$00
+// colon (screen code $22)
+    .byte $00,$18,$18,$00,$18,$18,$00,$00
+// digit 0 (screen code $23)
+    .byte $3c,$66,$6e,$76,$66,$66,$3c,$00
+// digit 1 (screen code $24)
+    .byte $18,$38,$18,$18,$18,$18,$3c,$00
+// digit 2 (screen code $25)
+    .byte $3c,$66,$06,$0c,$30,$60,$7e,$00
+// digit 3 (screen code $26)
+    .byte $3c,$66,$06,$1c,$06,$66,$3c,$00
+// digit 4 (screen code $27)
+    .byte $0c,$1c,$3c,$6c,$7e,$0c,$0c,$00
+// digit 5 (screen code $28)
+    .byte $7e,$60,$7c,$06,$06,$66,$3c,$00
+// digit 6 (screen code $29)
+    .byte $3c,$66,$60,$7c,$66,$66,$3c,$00
+// digit 7 (screen code $2a)
+    .byte $7e,$06,$0c,$18,$30,$30,$30,$00
+// digit 8 (screen code $2b)
+    .byte $3c,$66,$66,$3c,$66,$66,$3c,$00
+// digit 9 (screen code $2c)
+    .byte $3c,$66,$66,$3e,$06,$66,$3c,$00
 
 game_bg_charset_end:
     .fill 256*8 - (game_bg_charset_end - game_bg_charset), $00
@@ -260,6 +292,17 @@ knife1:
     .byte $00,$00,$b0,$00,$00,$b0,$00,$00
     .byte $b0,$3f,$ff,$ff,$2f,$ff,$ff,$0a
     .byte $aa,$ba,$00,$00,$b0,$00,$00,$b0
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$81
+
+// knife2: exact vertical mirror of knife1 (rows reversed, same multicolor palette)
+knife2:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$b0,$00,$00,$b0,$0a,$aa,$ba
+    .byte $2f,$ff,$ff,$3f,$ff,$ff,$00,$00
+    .byte $b0,$00,$00,$b0,$00,$00,$b0,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
     .byte $00,$00,$00,$00,$00,$00,$00,$00
     .byte $00,$00,$00,$00,$00,$00,$00,$81
 
@@ -557,6 +600,190 @@ kuro_ld:
     .byte $0a,$aa,$a0
     .byte $0f,$f0,$f0
     .byte $81
+
+// ============================================================
+// Lung dragon boss sprites  (multicolor, Y-expanded, sprite slot 5)
+// Colors: $d025=yellow($07)  $d026=black($00)  sprite-color=red($02)
+// Bit-pairs: %00=transparent  %01=yellow  %10=sprite-color(red)  %11=multicolor2(black)
+// Sprites from spritemate 4/5/2026
+// ============================================================
+
+* = $3700
+// Lung walk left frame 0
+lung_l0:
+    .byte $01,$40,$00,$02,$b0,$00,$06,$a0
+    .byte $00,$0a,$ac,$00,$19,$eb,$00,$2b
+    .byte $ab,$00,$2a,$aa,$00,$16,$1b,$00
+    .byte $0e,$1a,$00,$16,$1b,$00,$08,$18
+    .byte $1b,$00,$60,$6a,$05,$a0,$aa,$1a
+    .byte $80,$b2,$1a,$c1,$b0,$1a,$c6,$b0
+    .byte $1a,$ca,$c0,$1b,$9a,$c0,$0a,$ab
+    .byte $00,$02,$eb,$00,$07,$1b,$00,$82
+
+* = $3740
+// Lung walk left frame 1
+lung_l1:
+    .byte $01,$40,$00,$02,$b0,$00,$06,$a0
+    .byte $00,$0a,$ac,$00,$19,$eb,$00,$2b
+    .byte $ab,$00,$2a,$aa,$00,$16,$1b,$0b
+    .byte $0e,$1a,$1a,$16,$1b,$6a,$08,$18
+    .byte $6b,$00,$60,$b0,$05,$a0,$a0,$1a
+    .byte $80,$b0,$1a,$c1,$b0,$1a,$c6,$b0
+    .byte $1a,$ca,$c0,$1b,$9a,$c0,$0b,$2b
+    .byte $00,$2c,$2c,$00,$6c,$6c,$00,$82
+
+* = $3780
+// Lung walk left frame 2
+lung_l2:
+    .byte $01,$40,$00,$02,$b0,$00,$06,$a0
+    .byte $00,$0a,$ac,$00,$19,$eb,$00,$2b
+    .byte $ab,$00,$2a,$aa,$00,$16,$1b,$00
+    .byte $0e,$1a,$00,$16,$1b,$00,$08,$18
+    .byte $00,$00,$60,$1b,$05,$a0,$6b,$1a
+    .byte $80,$aa,$1a,$c1,$a2,$1a,$c6,$b0
+    .byte $1a,$ca,$c0,$0a,$9a,$00,$02,$ab
+    .byte $c0,$00,$aa,$b0,$01,$b1,$ac,$82
+
+* = $37c0
+// Lung fire pose left
+lung_fl:
+    .byte $01,$40,$00,$02,$b0,$00,$06,$e0
+    .byte $00,$0b,$ac,$00,$1d,$eb,$00,$2b
+    .byte $ab,$00,$1a,$aa,$00,$06,$1b,$00
+    .byte $0e,$1a,$00,$0e,$1b,$00,$04,$18
+    .byte $1b,$10,$60,$6a,$05,$a0,$aa,$1a
+    .byte $80,$b2,$1a,$c1,$b0,$1a,$c6,$b0
+    .byte $1a,$ca,$c0,$1b,$9a,$c0,$0a,$ab
+    .byte $00,$02,$eb,$00,$07,$1b,$00,$82
+
+* = $3800
+// Lung walk right frame 0
+lung_r0:
+    .byte $00,$01,$40,$00,$0e,$80,$00,$0a
+    .byte $90,$00,$3a,$a0,$00,$eb,$64,$00
+    .byte $ea,$e8,$00,$aa,$a8,$00,$e4,$94
+    .byte $00,$a4,$b0,$00,$e4,$94,$e4,$24
+    .byte $20,$a9,$09,$00,$aa,$0a,$50,$8e
+    .byte $02,$a4,$0e,$43,$a4,$0e,$93,$a4
+    .byte $03,$a3,$a4,$03,$a6,$e4,$00,$ea
+    .byte $a0,$00,$eb,$80,$00,$e4,$d0,$82
+
+* = $3840
+// Lung walk right frame 1
+lung_r1:
+    .byte $00,$01,$40,$00,$0e,$80,$00,$0a
+    .byte $90,$00,$3a,$a0,$00,$eb,$64,$00
+    .byte $ea,$e8,$00,$aa,$a8,$e0,$e4,$94
+    .byte $a4,$a4,$b0,$a9,$e4,$94,$e9,$24
+    .byte $20,$0e,$09,$00,$0a,$0a,$50,$0e
+    .byte $02,$a4,$0e,$43,$a4,$0e,$93,$a4
+    .byte $03,$a3,$a4,$03,$a6,$e4,$00,$e8
+    .byte $e0,$00,$38,$38,$00,$39,$39,$82
+
+* = $3880
+// Lung walk right frame 2
+lung_r2:
+    .byte $00,$01,$40,$00,$0e,$80,$00,$0a
+    .byte $90,$00,$3a,$a0,$00,$eb,$64,$00
+    .byte $ea,$e8,$00,$aa,$a8,$00,$e4,$94
+    .byte $00,$a4,$b0,$00,$e4,$94,$00,$24
+    .byte $20,$e4,$09,$00,$e9,$0a,$50,$aa
+    .byte $02,$a4,$8a,$43,$a4,$0e,$93,$a4
+    .byte $03,$a3,$a4,$00,$a6,$a0,$03,$ea
+    .byte $80,$0e,$aa,$00,$3a,$4e,$40,$82
+
+* = $38c0
+// Lung fire pose right
+lung_fr:
+    .byte $00,$01,$40,$00,$0e,$80,$00,$0b
+    .byte $90,$00,$3a,$e0,$00,$eb,$74,$00
+    .byte $ea,$e8,$00,$aa,$a4,$00,$e4,$90
+    .byte $00,$a4,$b0,$00,$e4,$b0,$e4,$24
+    .byte $10,$a9,$09,$04,$aa,$0a,$50,$8e
+    .byte $02,$a4,$0e,$43,$a4,$0e,$93,$a4
+    .byte $03,$a3,$a4,$03,$a6,$e4,$00,$ea
+    .byte $a0,$00,$eb,$80,$00,$e4,$d0,$82
+
+* = $3900
+// Lung death frame  (collapsed — kept from original design)
+lung_ld:
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $03,$ff,$f0  // head fallen
+    .byte $0f,$d5,$fc  // head + belly
+    .byte $3f,$55,$ff  // belly
+    .byte $ff,$55,$ff  // full body
+    .byte $ff,$55,$fc  // body
+    .byte $ff,$54,$f0  // body narrowing
+    .byte $fc,$50,$c0  // tail start
+    .byte $f0,$00,$00  // tail
+    .byte $c0,$00,$00  // tail tip
+    .byte $00,$00,$00
+    .byte $82
+
+// ============================================================
+// Lung fireball sprites  (multicolor, single-height, slots 6 & 7)
+// Left-travelling fireballs: lung_fbl0/1
+// Right-travelling fireballs: lung_fbr0/1
+// Colors: $d025=yellow($07)  $d026=black($00)  sprite-color=red($02)
+// ============================================================
+
+* = $3940
+// Lung fireball left frame 0
+lung_fbl0:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$aa,$00
+    .byte $02,$aa,$82,$02,$5a,$a0,$01,$95
+    .byte $98,$02,$5a,$a0,$02,$aa,$80,$00
+    .byte $aa,$08,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$82
+
+* = $3980
+// Lung fireball left frame 1
+lung_fbl1:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$aa,$00
+    .byte $02,$aa,$80,$02,$9a,$a2,$02,$65
+    .byte $98,$02,$9a,$a0,$02,$aa,$82,$00
+    .byte $aa,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$82
+
+* = $39c0
+// Lung fireball right frame 0
+lung_fbr0:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$aa,$00
+    .byte $82,$aa,$80,$0a,$a5,$80,$26,$56
+    .byte $40,$0a,$a5,$80,$02,$aa,$80,$20
+    .byte $aa,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$82
+
+* = $3a00
+// Lung fireball right frame 1
+lung_fbr1:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$aa,$00
+    .byte $02,$aa,$80,$8a,$a6,$80,$26,$59
+    .byte $80,$0a,$a6,$80,$82,$aa,$80,$00
+    .byte $aa,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$82
 
 // Logo map data: 15x6 cells, 8 bits per cell (90 bytes)
 map_data:

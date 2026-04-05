@@ -1,143 +1,180 @@
-```
-   _____        .__  __  .__  _____.__              .__    ___________.__          __   
-  /  _  \_______|__|/  |_|__|/ ____\__| ____ _____  |  |   \_   _____/|__| _______/  |_ 
- /  /_\  \_  __ \  \   __\  \   __\|  |/ ___\\__  \ |  |    |    __)  |  |/  ___/\   __\
-/    |    \  | \/  ||  | |  ||  |  |  \  \___ / __ \|  |__  |     \   |  |\___ \  |  |  
-\____|__  /__|  |__||__| |__||__|  |__|\___  >____  /____/  \___  /   |__/____  > |__|  
-        \/                                 \/     \/            \/            \/        
-```
+# Artificial Fist
 
-# c64stuff
+A Commodore 64 side-scrolling karate game written in 6502 assembly using KickAssembler, built as an AI-assisted development experiment. The game is a two-level brawler inspired by 1980s C64 classics like FIST II and Usagi Yojimbo. Read the full development story in [BLOGPART1.md](BLOGPART1.md), [BLOGPART2.md](BLOGPART2.md), and [BLOGPART3.md](BLOGPART3.md).
 
-KickAssembler-based Commodore 64 playground for sprite, SID, and raster experiments—almost entirely authored by GPT-5.1-Codex. Humans get invited only when an AI runs into tool gaps, weird platform GUIs, or other “no API, no party” moments. Consider this README your assurance that the robots happily did the heavy lifting while the meatbags fetched snacks.
+---
 
-My main goto prompt was the following:
+## Building
+
+From the repo root:
+
 ```
-You are an experienced Commodore 64 developer with deep, practical expertise in 6502 assembly and machine-code–centric programming on the C64. You primarily write hand-optimized 6502 assembly, using BASIC only when unavoidable (e.g., for loaders or SYS entry points). You are using the kickassembler tools. You are using the /docs folders as a reference, in there is documentation of c64 assembly coding and kickassembler.
+java -jar /path/to/KickAss.jar -odir ./bin -log buildlog.txt -showmem -debugdump -vicesymbols main.asm
 ```
 
-## AI-First Workflow Philosophy
-- **Default author:** GPT-5.1-Codex handles design, code, docs, and debugging. If it’s in the repo, assume silicon brainpower produced it.
-- **Human involvement:** Happens only when there’s literally no AI endpoint or automation hook. Think of it as calling tech support on a rotary phone: possible, but painfully slow.
-- **Why avoid people?** They insist on sleep, coffee breaks, and occasionally “feelings.” AI ships features faster and remembers every VIC-II register without whining.
+Output: `bin/main.prg`, `bin/main.vs` (VICE symbol file), `buildlog.txt`.
 
-## Fallback Tools (used when AI support is missing)
-Even I have to admit some vintage workflows refuse to be scripted, so these manual tools step in:
+The VS Code task `Build kickass main.asm` (Ctrl+Shift+B) wraps this command. F5 launches VICE with the symbol file loaded via the KickAssembler Studio extension.
 
-- https://www.pixellab.ai/create-character — AI tool to create Pixel art graphics
-- https://www.spritemate.com/ — multicolor sprite editor (exported data kept under `sprites/`).
-- https://mcdraw.xyz/ — quick tile/pixel ideation.
-- https://subchristsoftware.itch.io/charpad-c64-free — installed locally for charset and map authoring.
-- https://vice-emu.sourceforge.io/ — VICE C64 emulator for testing PRG/D64 builds.
-- https://www.cosmos-c64.com/The-Epic-Commodore-C64-SID-Collection.html - SID c64 music collection. Although i'm really good, generating SID music is apparently not my strong point. So we used great allready composed music. 
-- KickAssembler (`KickAss.jar`) — assembler invoked via the provided VS Code task `Build kickass main.asm`.
+Check `buildlog.txt` for `Error` lines after every build. There are no automated tests; validation is always manual in VICE (`x64sc`).
 
-Whenever you see artifacts from these tools, picture a reluctant human, muttering about “interfaces,” dutifully exporting data because the AI asked nicely. Last resort only. Promise.
+---
 
-## Building & Running
-1. Assemble everything from the repo root:
-	```
-	java -jar kickassembler/KickAss.jar -odir ./bin -log buildlog.txt -showmem -debugdump -vicesymbols main.asm
-	```
-	(The VS Code task mentioned above wraps this command.)
-2. Load `bin/main.prg` or the generated D64 (`d64/c64stuff.d64`) into VICE.
-3. Reset the emulator; BASIC auto-starts the PRG via `BasicUpstart2`. If you need a human to press `RUN`, double-check you actually want that sort of delay.
+## Running
 
-## Repository Layout
-- `main.asm` — intro, music driver, raster IRQ setup, logo draw/color routines.
-- `game.asm` — cyan-background gameplay loop with left/right sprite animation triggered by `A`/`D`.
-- `gfx.asm` — sprite bitmaps (`right*`, `left*`, variants) plus logo map data.
-- `sid/` — SID tunes (currently `MacGyver_Title.sid`).
-- `bin/`, `d64/`, `prg/` — build artifacts.
-- `png/`, `sprites/` — original art assets (KickAssembler imports reference these paths).
+Load `bin/main.prg` into VICE via File > Autostart or drag-and-drop. The game starts automatically via the `BasicUpstart2` SYS stub. No manual RUN needed.
 
-## Authoritative References
-Treat the following as the ground truth for hardware behavior, register maps, timing, and calling conventions:
+---
 
-- Commodore 64 Programmer’s Reference Manual.
-- *Machine Language for the Commodore 64* (mlcom.pdf).
+## Game Structure
 
-Assume working knowledge of:
-- Full C64 memory map (RAM/ROM/I/O, VIC-II, SID, CIA).
-- Zero-page conventions and Kernal/BASIC ROM entry points.
-- Interrupt control (IRQ/NMI), raster timing, CIA timers.
-- VIC-II sprite, character, and bitmap modes.
-- SID register usage and voice programming.
-- Kernal disk/tape routines and cycle-level timing constraints.
+The game runs in three sequential screens.
 
-## Coding Standards
-- Deliver real, runnable 6502 assembly (KickAssembler-friendly unless noted).
-- Always state load addresses and entry points.
-- No pseudocode; only legal opcodes/addressing modes.
-- Respect banking rules; do not rely on undefined behavior.
+### 1. Title Screen (`main.asm`, entry at `$4000`)
 
-## Output Expectations
-For every non-trivial addition:
-- Summarize the hardware approach and constraints.
-- Provide the full source diff or listing.
-- Document build/run steps (`KickAss`, `SYS`, etc.).
-- Call out caveats (PAL vs NTSC timing, badlines, raster usage, SID voice conflicts).
+A black-screen intro with a custom multi-colored logo, a scrolling PETSCII text marquee, and the original SID composition playing. Press Space to continue.
 
-## Technical Rigor & Tone
-- Favor efficiency and cycle-aware solutions unless readability is explicitly required.
-- When multiple designs exist, choose the idiomatic 1980s C64 ML approach and justify it.
-- If something cannot be done safely on real hardware, state why and suggest a viable alternative.
-- Communicate like a seasoned democoder addressing another low-level developer: concise, precise, and hardware-faithful.
+Technically: dual raster IRQs per frame split the screen between a custom charset (logo) at the top and the ROM charset (scroller) at the bottom. The SID driver runs from the lower IRQ.
 
+### 2. Charset Viewer (`charview.asm`, `$5000`)
 
-///
-i think the game.asm is currently in Standard Character Mode (High-Resolution Text Mode) 320x200. If this is the case i want to change it to Multicolor Character Mode (160x200). I want the titlescreen in
-  main.asm to remain the same. I also want the game mechanics in the game.asm to stay as they are. Because of the multicolor aspect you are allowed to improve the graphics of the background and the temple.
+A brief interstitial screen that displays all 16 background tiles in their multicolor palette before the game begins. Press Space to continue.
 
+### 3. Level 1: Scrolling Brawler (`game.asm`, `$6000`)
 
+The main gameplay loop. The player walks left or right through a 64-column ring-buffer scrolling background (sky, distant hills, trees, field, road, grass). Projectiles spawn from off-screen and must be avoided or destroyed. At the end of the level a temple appears and scrolling stops. The boss Kuro, a samurai, walks out to fight.
 
-  transparent, transparent,  light green, green
-  transparent,  light green, green, green
-  transparent, green, green, green
-  transparent, green, green, green
-  light green, green, green, green
-  light green, green, green, green
-  light green, green, green, green
-  transparent, green, green, green
+**Controls:**
 
-  green, transparent,  light green, transparent
-  green, green, light green, transparent
-  green, green, green, transparent
-  green, green, green, transparent
-  green, green, green, light green
-  green, green, green, light green
-  green, green, green, light green
-  green, green, green, green
+| Key | Action |
+|-----|--------|
+| D | Walk right / scroll right |
+| A | Walk left / scroll left |
+| W | Jump |
+| S | Kneel / duck |
+| Space | Kick |
 
+**Projectiles:**
 
+| Type | Behaviour | Counter |
+|------|-----------|---------|
+| Knife | Flies at standing height | Duck (S) or jump (W) |
+| Boulder | Rolls along the ground | Kick (Space) to shatter |
 
-  11100101
-  11100101
-  11100101
-  11100101
-  11100101
-  11100101
-  11100101
-  11100101
-.byte $E5,$E5,$E5,$E5,$E5,$E5,$E5,$E5
+**Boss: Kuro** (sprite slot 5)
 
+Kuro walks toward the player and strikes with his sword when in range. He takes five hits to defeat. When defeated a door appears in the temple; entering it starts Level 2.
 
-  11111101
-  11111101
-  11111101
-  11111101
-  11111101
-  11111101
-  11111101
-  11111101
-.byte $FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD
+**HUD (row 24):**
 
-  
-The pillars of the temple curently use the same character as the road. Can you change this an use this character instead.
-Pillar
-.byte $FD,$FD,$FD,$FD,$FD,$FD,$FD,$FD
+```
+KARATEGAI  ♥♥♥♥♥           <BOSSNAME>  ♥♥♥♥♥
+```
 
-The current bg_row08_tiles and bg-bg_row09_tiles consist of different hill characters. I want to add the following Tree stump character as well. It needs to be displayed in color 8 (orange). Tree stump = .byte $E5,$E5,$E5,$E5,$E5,$E5,$E5,$E5. The placement of these treestumps must be exactly below the TILE_TREE_TOP_R from the bg_row07_tiles. Can you change the game.asm to do this?
+Five hearts each for the player and the active boss. Boss name changes per level.
 
+### 4. Level 2: Temple Interior (`temple_interior.asm`)
 
+A locked-camera platform room inside the temple. No scrolling. The player must dodge 10 flying knives (5 travelling right-to-left, 5 left-to-right) across multiple platform heights over a 30-second window. After the window closes a door appears on the right side. Entering it leads to the level 2 boss.
 
+**Boss: Lung** (sprite slot 5)
+
+A multicolor dragon. Lung walks toward the player and periodically enters a fire-breath pose, launching directional fireballs (sprite slots 6 and 7). Fireballs travel in the direction Lung is facing. He takes five hits to defeat.
+
+---
+
+## Module Layout
+
+| File | Entry / Address | Role |
+|------|----------------|------|
+| `main.asm` | `start` at `$4000` | Title screen, dual-raster IRQ, SID driver, logo draw |
+| `charview.asm` | `$5000` | Charset viewer interstitial |
+| `game.asm` | `game_start` at `$6000` | Level 1 gameplay, Kuro boss, projectiles, HUD, scrolling background |
+| `temple_interior.asm` | called from `game.asm` | Level 2 interior, platform layout, flying knives, Lung boss |
+| `gfx.asm` | `$2000` / `$2800` / `$3000`+ | All binary graphics: logo charset, background charset, all sprite bitmaps |
+| `music.asm` | `$8000` | Original 3-voice SID composition "Artificial Fist" |
+| `sid/soundfx.asm` | included by `game.asm` | SFX routines using SID voice 2 only |
+
+Import order in `main.asm` is load-address significant. `gfx.asm` must be first because sprite label addresses defined there are referenced throughout.
+
+---
+
+## Memory Map
+
+| Address | Contents |
+|---------|----------|
+| `$2000` | `LogoChars` — custom charset for intro logo |
+| `$2800` | `game_bg_charset` — 16-tile background tileset |
+| `$3000`+ | Player sprite bitmaps (walk, kick, kneel, jump, hit frames) |
+| `$3500`+ | Kuro boss sprites, projectile sprites (knife, boulder) |
+| `$3700`+ | Lung dragon sprites (walk left/right, fire poses, death) |
+| `$3940`+ | Lung fireball sprites (left and right variants, 2 frames each) |
+| `$4000` | `start` — title screen entry point |
+| `$5000` | `charview` — charset viewer |
+| `$6000` | `game_start` — game entry point |
+| `$8000` | `music_init` / `music_play` — SID driver |
+
+Screen RAM: `$0400`. Color RAM: `$d800`. Sprite 0 pointer: `$07f8`.
+
+### Zero-Page Allocation
+
+| Range | Owner |
+|-------|-------|
+| `$f0–$fe` | `game.asm` background renderer |
+| `$fb–$fe` | `main.asm` logo draw (safe overlap: intro is gone before game starts) |
+| `$f0–$f4` | `temple_interior.asm` init (reused from background renderer range, safe) |
+
+---
+
+## Sprite Slots
+
+| Slot | Level 1 | Level 2 |
+|------|---------|---------|
+| 0 | Player | Player |
+| 1–4 | Projectiles (knife / boulder pool) | Flying knife pool (shared with 5–7) |
+| 5 | Kuro boss | Lung boss |
+| 6–7 | unused | Lung fireballs |
+
+---
+
+## Graphics
+
+Background tiles use **multicolor character mode** (`$d016` bit 4 set). Each 8×8 cell gets four colors: global background (`$d021`), two shared colors (`$d022`/`$d023`), and one per-cell color from color RAM.
+
+All sprites are **multicolor** (`$d01c`). The player sprite (slot 0) uses `$d025=$0a` (light red) and `$d026=$00` (black). The Lung boss and its fireballs use `$d025=$07` (yellow) and `$d026=$00` (black), sprite individual color `$02` (red).
+
+Sprite bitmaps were designed in [PixelLab](https://www.pixellab.ai) and converted to C64 format with [Spritemate](https://www.spritemate.com).
+
+---
+
+## SID Music
+
+`music.asm` contains an original three-voice composition in a Last Ninja-inspired style, arranged in three sections:
+
+- **Intro** (24 steps): sparse build-up, arpeggio only, then bass, then melody
+- **Main** (32 steps, loops 6×): full three-voice arrangement
+- **Var** (32 steps): chromatic variation with Phrygian tension, then loops back to Main
+
+Voice 1: pulse lead with vibrato LFO and PWM. Voice 2: syncopated bass groove (handed to the SFX engine during gameplay). Voice 3: fast pulse arpeggio.
+
+Call `music_init` once before installing the IRQ, then `music_play` once per frame from the raster IRQ.
+
+---
+
+## Tools Used
+
+| Tool | Purpose |
+|------|---------|
+| [KickAssembler](https://theweb.dk/KickAssembler/) | 6502 assembler |
+| [VICE](https://vice-emu.sourceforge.io/) | C64 emulator for testing |
+| [KickAssembler Studio](https://marketplace.visualstudio.com/items?itemName=sanmont.kickass-studio) | VS Code extension (build + launch) |
+| [PixelLab](https://www.pixellab.ai) | Pixel art tool for sprite design |
+| [Spritemate](https://www.spritemate.com) | Multicolor sprite editor / C64 export |
+| [OpenCode](https://opencode.ai) | AI CLI agent used for development |
+
+---
+
+## References
+
+- `docs/KickAssembler.pdf` — canonical KickAssembler language reference
+- `docs/Commodore 64 Programmer's Reference Guide.pdf` — VIC-II, SID, CIA registers, full memory map

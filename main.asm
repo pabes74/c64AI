@@ -1,6 +1,9 @@
 BasicUpstart2(start)
 
 .import source "gfx.asm"
+.import source "charview.asm"
+.import source "game.asm"
+.import source "temple_interior.asm"
 .import source "music.asm"
 
 .const MUSIC_INIT = music_init
@@ -59,6 +62,10 @@ start:
 
     // Clear the screen
     jsr $e544
+
+    // Reset level counter — start always means a fresh run (boot or game over)
+    lda #$01
+    sta current_level
 
     // Use custom charset at $2000 with screen at $0400
     // $d018: bits 4-7 = screen / $0400, bits 1-3 = chars / $0800
@@ -287,7 +294,7 @@ sid_clear_loop:
 
     cli
 
-    jmp start
+    jmp charview_start
 
 
 // Draw 15x6 logo map at top of screen (starting at $0400)

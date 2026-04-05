@@ -21,6 +21,7 @@
 .const GAME_RIGHTD_PTR = rightd / 64
 .const GAME_LEFTD_PTR  = leftd / 64
 .const KNIFE_PTR = knife1 / 64
+.const KNIFE2_PTR = knife2 / 64
 .const BOULDER_PTR = boulder1 / 64
 
 // Kuro boss sprite pointers
@@ -51,9 +52,64 @@
 .const KURO_STATE_DEAD = 3
 .const KURO_STRIKE_TICKS = 15              // duration of sword strike pose
 .const KURO_RECOIL_TICKS = 20              // stagger after being kicked
-.const KURO_RECOIL_SPEED = 2               // pushed back pixels per tick
+.const KURO_RECOIL_SPEED = 2              // pushed back pixels per tick
 
-.const GAME_TOP_COLOR     = $03
+// Lung dragon boss sprite pointers (level 2 boss — sprite slot 5, fireball slots 6 & 7)
+.const LUNG_R0_PTR   = lung_r0  / 64
+.const LUNG_R1_PTR   = lung_r1  / 64
+.const LUNG_R2_PTR   = lung_r2  / 64
+.const LUNG_L0_PTR   = lung_l0  / 64
+.const LUNG_L1_PTR   = lung_l1  / 64
+.const LUNG_L2_PTR   = lung_l2  / 64
+.const LUNG_FL_PTR   = lung_fl  / 64      // fire-breath pose, facing left
+.const LUNG_FR_PTR   = lung_fr  / 64      // fire-breath pose, facing right
+.const LUNG_LD_PTR   = lung_ld  / 64
+.const LUNG_FBL0_PTR = lung_fbl0 / 64    // fireball left frame 0
+.const LUNG_FBL1_PTR = lung_fbl1 / 64    // fireball left frame 1
+.const LUNG_FBR0_PTR = lung_fbr0 / 64    // fireball right frame 0
+.const LUNG_FBR1_PTR = lung_fbr1 / 64    // fireball right frame 1
+
+// Lung behaviour
+.const LUNG_SPRITE_COLOR  = $02            // red body (spritemate color nibble)
+.const LUNG_FB_COLOR      = $02            // red — fireballs share the same sprite color
+.const LUNG_FB_SPRITE_A   = 6
+.const LUNG_FB_SPRITE_B   = 7
+.const LUNG_START_X       = 80             // spawn X lo (MSB=1 → X=336, off right edge)
+.const LUNG_START_X_MSB   = 1
+.const LUNG_WALK_SPEED    = 1              // pixels per movement tick
+.const LUNG_BREATH_RANGE  = 120           // approach distance before breathing fire
+.const LUNG_KICK_RANGE    = 28            // hit-box distance for player kick
+
+// Fireball
+.const LUNG_FB_SPEED      = 2             // pixels per frame — matches PROJ_SPEED (throwing knives)
+.const LUNG_FB_ANIM_TICKS = 6            // frames between fireball sprite flips
+.const LUNG_FB_HIT_DX     = 16           // X overlap threshold for fireball hit
+.const LUNG_FB_HIT_DY     = 12           // Y overlap threshold for fireball hit
+.const LUNG_FB_ENABLE_6   = %01000000
+.const LUNG_FB_DISABLE_6  = %10111111
+.const LUNG_FB_ENABLE_7   = %10000000
+.const LUNG_FB_DISABLE_7  = %01111111
+
+// Lung FSM states and timings
+.const LUNG_STATE_WALK    = 0
+.const LUNG_STATE_BREATH  = 1
+.const LUNG_STATE_RECOIL  = 2
+.const LUNG_STATE_DEAD    = 3
+.const LUNG_BREATH_TICKS  = 160           // breath cycle duration (~3.2 s at 50 Hz)
+.const LUNG_RECOIL_TICKS  = 20
+.const LUNG_RECOIL_SPEED  = 2
+
+// Fireball launch tick (count-up from breath start) — one fireball per cycle
+.const LUNG_FB1_TICK      = 10
+
+// HUD
+.const HUD_N_CHAR         = $1e           // 'N' in custom charset (used in "LUNG")
+
+// Background/border color per level (both $d020 and $d021)
+.const GAME_BG_COLOR_L1   = $03            // level 1: cyan
+.const GAME_BG_COLOR_L2   = $0e            // level 2: light blue
+.const GAME_BG_COLOR_L3   = $06            // level 3: blue
+.const GAME_BG_COLOR_L4   = $00            // level 4: black
 
 .const ANIM_FRAME_COUNT = 3
 .const ANIM_FRAME_TICKS = 6             // ~0.12s per frame @ 50Hz
@@ -69,6 +125,9 @@
 .const POSE_MODE_HIT = 4
 
 .const POSE_TICK_DIVIDER = 4
+.const JUMP_TICK_DIVIDER = 7      // slower tick rate for jump (more visible arc)
+.const JUMP_AIR_STEPS = 25        // jump_y_offsets entries where sprite is airborne
+.const JUMP_COOLDOWN_TICKS = 50   // jiffy ticks (~1 second) before another jump is allowed
 .const HIT_DURATION_TICKS = 8
 
 .const ANIM_DIR_RIGHT = 0
@@ -110,6 +169,7 @@
 .const TILE_TREE_FILL        = $1d
 .const TILE_ROAD2            = $0f
 .const TILE_PILLAR           = $19
+.const TILE_DOOR             = $1d   // all-%11 pixels; colour RAM $00 = solid black entrance
 .const TILE_TREE_STUMP       = $1a
 
 .const GAME_CHARSET_VALUE = $1a// screen=$0400, chars=$2800 (see game_bg_charset in gfx.asm)
@@ -140,6 +200,15 @@
 .const BOSS_HUD_TEXT_LEN = 4
 .const BOSS_LIFE_MAX = 5
 
+// Level HUD (centre of row 24)
+.const HUD_LEVEL_COL     = 17             // "LVL:N" starts at col 17 (centred in cols 15–29)
+.const HUD_LEVEL_LEN     = 5             // 5 chars: L V L : digit
+.const HUD_L_CHAR        = $20            // L  (screen code $20)
+.const HUD_V_CHAR        = $21            // V  (screen code $21)
+.const HUD_COLON_CHAR    = $22            // :  (screen code $22)
+.const HUD_DIGIT0_CHAR   = $23            // base screen code for digit '0'
+.const HUD_LEVEL_COLOR   = $07            // yellow — visible on both cyan ($03) and black ($00) backgrounds
+
 // Projectiles (using sprites 1-4)
 .const PROJ_COUNT = 4
 .const PROJ_INACTIVE = $00
@@ -162,11 +231,795 @@
 .const TEMPLE_VISIBLE_SCROLLS = BG_VISIBLE_COLS + TEMPLE_WIDTH
 .const TEMPLE_CENTER_SCROLLS = TEMPLE_TRIGGER_SCROLLS + 30  // temple centered on screen
 
+// ============================================================
+// Lung dragon boss routines — placed at $5200 to keep game
+// segment ($6000+) below temple_interior ($7800).
+// ============================================================
+* = $5200
+
+// --- Lung dragon boss routines (level 2) -------------------------------------
+
+spawn_lung:
+    lda lung_active
+    beq spawn_lung_go
+    jmp spawn_lung_done            // already active
+spawn_lung_go:
+
+    lda #$01
+    sta lung_active
+
+    // initial position: right side, X lo=$50 hi=$01 → X=336
+    lda #LUNG_START_X
+    sta lung_x_lo
+    lda #LUNG_START_X_MSB
+    sta lung_x_hi
+
+    // Y: align bottom with player (Y-expanded = 42 px tall)
+    lda $d001
+    sec
+    sbc #21
+    sta $d00b                      // sprite 5 Y
+
+    lda lung_x_lo
+    sta $d00a                      // sprite 5 X lo
+
+    // set X MSB for sprite 5 (bit 5 of $d010)
+    lda lung_x_hi
+    beq spawn_lung_msb_clear
+    lda $d010
+    ora #%00100000
+    sta $d010
+    jmp spawn_lung_color
+spawn_lung_msb_clear:
+    lda $d010
+    and #%11011111
+    sta $d010
+
+spawn_lung_color:
+    lda #LUNG_SPRITE_COLOR
+    sta $d02c                      // sprite 5 color = red
+
+    // enable sprite 5
+    lda $d015
+    ora #%00100000
+    sta $d015
+
+    // multicolor for sprite 5
+    lda $d01c
+    ora #%00100000
+    sta $d01c
+
+    // Y-expand sprite 5
+    lda $d017
+    ora #%00100000
+    sta $d017
+
+    // shared multicolor registers for Lung body + fireballs
+    lda #$07                       // yellow — multicolor 1 (belly, horn highlights)
+    sta $d025
+    lda #$00                       // black — multicolor 2 (outline, shadow)
+    sta $d026
+
+    // fireball sprite colors (sprites 6 & 7)
+    lda #LUNG_FB_COLOR
+    sta $d02d                      // sprite 6 color = red
+    sta $d02e                      // sprite 7 color = red
+
+    // multicolor for sprites 6 & 7 (fireballs)
+    lda $d01c
+    ora #%11000000
+    sta $d01c
+
+    // initial frame
+    lda #LUNG_L0_PTR
+    sta $07fd                      // sprite 5 pointer
+
+    lda #$00
+    sta lung_anim_frame
+    sta lung_anim_timer
+    sta lung_walk_timer
+    lda #$01
+    sta lung_dir                   // facing left (spawns on right)
+
+spawn_lung_done:
+    rts
+
+
+update_lung:
+    lda lung_active
+    bne lung_is_active
+    rts
+lung_is_active:
+
+    // sync Y with player (bottom-aligned)
+    lda $d001
+    sec
+    sbc #21
+    sta $d00b
+
+    // hit cooldown
+    lda lung_hit_cooldown
+    beq lung_no_cooldown
+    dec lung_hit_cooldown
+lung_no_cooldown:
+
+    // throttle by jiffy clock
+    lda $a2
+    cmp lung_walk_timer
+    bne lung_tick_ok
+    rts
+lung_tick_ok:
+    sta lung_walk_timer
+
+    // dispatch FSM
+    lda lung_state
+    cmp #LUNG_STATE_BREATH
+    bne lung_not_breath
+    jmp lung_do_breath
+lung_not_breath:
+    cmp #LUNG_STATE_RECOIL
+    bne lung_not_recoil
+    jmp lung_do_recoil
+lung_not_recoil:
+    cmp #LUNG_STATE_DEAD
+    bne lung_not_dead
+    rts
+lung_not_dead:
+
+    // --- LUNG_STATE_WALK ---
+    jsr lung_calc_distance
+    cmp #LUNG_BREATH_RANGE
+    bcc lung_begin_breath
+
+    // walk toward player
+    lda lung_x_hi
+    cmp lung_temp_hi
+    bcc lung_walk_right
+    bne lung_walk_left
+    lda lung_x_lo
+    cmp lung_temp_lo
+    bcc lung_walk_right
+
+lung_walk_left:
+    lda #1
+    sta lung_dir
+    lda lung_x_lo
+    sec
+    sbc #LUNG_WALK_SPEED
+    sta lung_x_lo
+    bcs lung_walk_left_clamp
+    dec lung_x_hi
+lung_walk_left_clamp:
+    lda lung_x_hi
+    bne lung_walk_left_ok
+    lda lung_x_lo
+    cmp #24
+    bcs lung_walk_left_ok
+    lda #24
+    sta lung_x_lo
+lung_walk_left_ok:
+    jsr lung_update_sprite_x
+    jmp lung_animate
+
+lung_walk_right:
+    lda #0
+    sta lung_dir
+    lda lung_x_lo
+    clc
+    adc #LUNG_WALK_SPEED
+    sta lung_x_lo
+    bcc lung_walk_right_clamp
+    inc lung_x_hi
+lung_walk_right_clamp:
+    lda lung_x_hi
+    beq lung_walk_right_ok
+    lda lung_x_lo
+    cmp #88
+    bcc lung_walk_right_ok
+    lda #88
+    sta lung_x_lo
+    lda #1
+    sta lung_x_hi
+lung_walk_right_ok:
+    jsr lung_update_sprite_x
+    jmp lung_animate
+
+lung_begin_breath:
+    lda #LUNG_STATE_BREATH
+    sta lung_state
+    lda #LUNG_BREATH_TICKS
+    sta lung_state_timer
+    lda #$00
+    sta lung_breath_tick
+    // show fire-breath pose while breathing
+    lda lung_dir
+    bne lung_breath_sprite_left
+    lda #LUNG_FR_PTR
+    jmp lung_breath_sprite_set
+lung_breath_sprite_left:
+    lda #LUNG_FL_PTR
+lung_breath_sprite_set:
+    sta $07fd
+    jmp update_lung_done
+
+    // --- LUNG_STATE_BREATH ---
+lung_do_breath:
+    inc lung_breath_tick
+
+    // fire one fireball per breath cycle at tick 10
+    lda lung_breath_tick
+    cmp #LUNG_FB1_TICK
+    bne lung_breath_timer
+    ldx #0
+    jsr fire_lung_fireball
+
+lung_breath_timer:
+    dec lung_state_timer
+    beq lung_breath_cycle_done
+    jmp update_lung_done
+lung_breath_cycle_done:
+    lda #LUNG_STATE_WALK
+    sta lung_state
+    jmp update_lung_done
+
+    // --- LUNG_STATE_RECOIL ---
+lung_do_recoil:
+    dec lung_state_timer
+    bne lung_recoil_move
+    lda #LUNG_STATE_WALK
+    sta lung_state
+    jmp update_lung_done
+
+lung_recoil_move:
+    lda lung_dir
+    bne lung_recoil_push_right     // facing left: push right
+    // facing right: push left
+    lda lung_x_lo
+    sec
+    sbc #LUNG_RECOIL_SPEED
+    sta lung_x_lo
+    bcs lung_recoil_left_clamp
+    dec lung_x_hi
+lung_recoil_left_clamp:
+    lda lung_x_hi
+    bne lung_recoil_done
+    lda lung_x_lo
+    cmp #24
+    bcs lung_recoil_done
+    lda #24
+    sta lung_x_lo
+    jmp lung_recoil_done
+
+lung_recoil_push_right:
+    lda lung_x_lo
+    clc
+    adc #LUNG_RECOIL_SPEED
+    sta lung_x_lo
+    bcc lung_recoil_right_clamp
+    inc lung_x_hi
+lung_recoil_right_clamp:
+    lda lung_x_hi
+    beq lung_recoil_done
+    lda lung_x_lo
+    cmp #88
+    bcc lung_recoil_done
+    lda #88
+    sta lung_x_lo
+    lda #1
+    sta lung_x_hi
+lung_recoil_done:
+    jsr lung_update_sprite_x
+    jmp update_lung_done
+
+lung_animate:
+    inc lung_anim_timer
+    lda lung_anim_timer
+    cmp #ANIM_FRAME_TICKS
+    bcc update_lung_done
+
+    lda #$00
+    sta lung_anim_timer
+
+    ldx lung_anim_frame
+    lda lung_dir
+    bne lung_anim_use_left
+    lda lung_anim_ptrs_right,x
+    jmp lung_anim_set
+lung_anim_use_left:
+    lda lung_anim_ptrs_left,x
+lung_anim_set:
+    sta $07fd
+
+    inx
+    cpx #ANIM_FRAME_COUNT
+    bne lung_anim_store
+    ldx #$00
+lung_anim_store:
+    stx lung_anim_frame
+
+update_lung_done:
+    rts
+
+
+// Calculate absolute X distance between Lung and player; result in A.
+// Also sets lung_temp_lo/hi to player X for direction comparisons.
+lung_calc_distance:
+    lda $d010
+    and #%00000001
+    sta lung_temp_hi
+    lda $d000
+    sta lung_temp_lo
+
+    lda lung_x_hi
+    cmp lung_temp_hi
+    bcc lung_dist_sub_lung
+    bne lung_dist_sub_player
+    lda lung_x_lo
+    cmp lung_temp_lo
+    bcc lung_dist_sub_lung
+
+lung_dist_sub_player:
+    lda lung_x_lo
+    sec
+    sbc lung_temp_lo
+    sta lung_temp_lo
+    lda lung_x_hi
+    sbc lung_temp_hi
+    bne lung_dist_far
+    lda lung_temp_lo
+    rts
+
+lung_dist_sub_lung:
+    lda lung_temp_lo
+    sec
+    sbc lung_x_lo
+    sta lung_temp_lo
+    lda lung_temp_hi
+    sbc lung_x_hi
+    bne lung_dist_far
+    lda lung_temp_lo
+    rts
+
+lung_dist_far:
+    lda #$ff
+    rts
+
+
+// Update sprite 5 X position from lung_x_lo/hi
+lung_update_sprite_x:
+    lda lung_x_lo
+    sta $d00a                      // sprite 5 X lo
+    lda lung_x_hi
+    beq lung_upd_clear_msb
+    lda $d010
+    ora #%00100000
+    sta $d010
+    rts
+lung_upd_clear_msb:
+    lda $d010
+    and #%11011111
+    sta $d010
+    rts
+
+
+// Fire a fireball from Lung.  X = slot index (0 or 1).
+// Slot 0 → VIC sprite 6; slot 1 → VIC sprite 7.
+// If slot already active, silently returns.
+fire_lung_fireball:
+    lda lung_fb_state,x
+    bne fire_fb_done               // slot busy — skip
+
+    lda #$01
+    sta lung_fb_state,x
+
+    // store firing direction (matches lung_dir: 0=right, 1=left)
+    lda lung_dir
+    sta lung_fb_dir,x
+
+    // start X at Lung's current position
+    lda lung_x_lo
+    sta lung_fb_x_lo,x
+    lda lung_x_hi
+    sta lung_fb_x_hi,x
+
+    // Y: snapshot player Y at fire time
+    lda $d001
+    sta lung_fb_y,x
+
+    // reset anim
+    lda #$00
+    sta lung_fb_anim_timer,x
+    sta lung_fb_frame,x
+
+    // pick initial sprite pointer from direction table
+    ldy lung_fb_dir,x
+    lda lung_fb_ptrs_frame0,y
+
+    // enable the correct sprite and write its Y
+    cpx #0
+    bne fire_fb_slot1
+
+    // slot 0 → sprite 6
+    lda $d015
+    ora #LUNG_FB_ENABLE_6
+    sta $d015
+    lda lung_fb_y
+    sta $d00d                      // sprite 6 Y
+    ldy lung_fb_dir
+    lda lung_fb_ptrs_frame0,y
+    sta $07fe                      // sprite 6 pointer
+    rts
+
+fire_fb_slot1:
+    // slot 1 → sprite 7
+    lda $d015
+    ora #LUNG_FB_ENABLE_7
+    sta $d015
+    lda lung_fb_y+1
+    sta $d00f                      // sprite 7 Y
+    ldy lung_fb_dir+1
+    lda lung_fb_ptrs_frame0,y
+    sta $07ff                      // sprite 7 pointer
+
+fire_fb_done:
+    rts
+
+
+// Update both active fireballs each frame.
+update_lung_fireballs:
+    // throttle movement to one step per jiffy tick — same rate as projectiles (knives)
+    lda $a2
+    cmp lung_fb_last_jiffy
+    bne lung_fb_jiffy_changed
+    rts                            // same tick — nothing to do
+lung_fb_jiffy_changed:
+    sta lung_fb_last_jiffy
+
+    ldx #0
+lung_fb_loop:
+    lda lung_fb_state,x
+    bne lung_fb_active
+    jmp lung_fb_next               // inactive — skip
+lung_fb_active:
+
+    // move: direction-dependent (1=left: subtract, 0=right: add)
+    lda lung_fb_dir,x
+    bne lung_fb_move_left
+
+    // travelling right: add LUNG_FB_SPEED to 16-bit X
+    lda lung_fb_x_lo,x
+    clc
+    adc #LUNG_FB_SPEED
+    sta lung_fb_x_lo,x
+    lda lung_fb_x_hi,x
+    adc #0
+    sta lung_fb_x_hi,x
+    // deactivate if past right edge (hi byte > 1, i.e. X > 511)
+    lda lung_fb_x_hi,x
+    cmp #2
+    bcc lung_fb_still_on
+    jmp lung_fb_deactivate
+
+lung_fb_move_left:
+    // travelling left: subtract LUNG_FB_SPEED from 16-bit X
+    lda lung_fb_x_lo,x
+    sec
+    sbc #LUNG_FB_SPEED
+    sta lung_fb_x_lo,x
+    lda lung_fb_x_hi,x
+    sbc #0
+    sta lung_fb_x_hi,x
+    bpl lung_fb_still_on
+    jmp lung_fb_deactivate
+lung_fb_still_on:
+
+    // write X and Y to VIC registers
+    cpx #0
+    bne lung_fb_write_slot1
+
+    // slot 0 → sprite 6 ($d00c/$d00d, MSB in $d010 bit 6)
+    lda lung_fb_x_lo
+    sta $d00c
+    lda lung_fb_x_hi
+    beq lung_fb_s6_clr_msb
+    lda $d010
+    ora #%01000000
+    sta $d010
+    jmp lung_fb_s6_anim
+lung_fb_s6_clr_msb:
+    lda $d010
+    and #%10111111
+    sta $d010
+lung_fb_s6_anim:
+    inc lung_fb_anim_timer
+    lda lung_fb_anim_timer
+    cmp #LUNG_FB_ANIM_TICKS
+    bcs lung_fb_s6_tick_expired
+    jmp lung_fb_next
+lung_fb_s6_tick_expired:
+    lda #$00
+    sta lung_fb_anim_timer
+    lda lung_fb_frame
+    eor #$01
+    sta lung_fb_frame              // A = new frame (0 or 1)
+    ldy lung_fb_dir                // Y = direction index (0=right, 1=left)
+    lda lung_fb_frame              // re-load frame to get correct Z flag
+    bne lung_fb_s6_frame1
+    lda lung_fb_ptrs_frame0,y      // frame 0 pointer for this direction
+    jmp lung_fb_s6_frame_set
+lung_fb_s6_frame1:
+    lda lung_fb_ptrs_frame1,y      // frame 1 pointer for this direction
+lung_fb_s6_frame_set:
+    sta $07fe
+    jmp lung_fb_next
+
+lung_fb_write_slot1:
+    // slot 1 → sprite 7 ($d00e/$d00f, MSB in $d010 bit 7)
+    lda lung_fb_x_lo+1
+    sta $d00e
+    lda lung_fb_x_hi+1
+    beq lung_fb_s7_clr_msb
+    lda $d010
+    ora #%10000000
+    sta $d010
+    jmp lung_fb_s7_anim
+lung_fb_s7_clr_msb:
+    lda $d010
+    and #%01111111
+    sta $d010
+lung_fb_s7_anim:
+    inc lung_fb_anim_timer+1
+    lda lung_fb_anim_timer+1
+    cmp #LUNG_FB_ANIM_TICKS
+    bcc lung_fb_next
+    lda #$00
+    sta lung_fb_anim_timer+1
+    lda lung_fb_frame+1
+    eor #$01
+    sta lung_fb_frame+1            // A = new frame (0 or 1)
+    ldy lung_fb_dir+1              // Y = direction index (0=right, 1=left)
+    lda lung_fb_frame+1            // re-load frame to get correct Z flag
+    bne lung_fb_s7_frame1
+    lda lung_fb_ptrs_frame0,y      // frame 0 pointer for this direction
+    jmp lung_fb_s7_frame_set
+lung_fb_s7_frame1:
+    lda lung_fb_ptrs_frame1,y      // frame 1 pointer for this direction
+lung_fb_s7_frame_set:
+    sta $07ff
+    jmp lung_fb_next
+
+lung_fb_deactivate:
+    lda #$00
+    sta lung_fb_state,x
+    cpx #0
+    bne lung_fb_dis_slot1
+    lda $d015
+    and #LUNG_FB_DISABLE_6
+    sta $d015
+    jmp lung_fb_next
+lung_fb_dis_slot1:
+    lda $d015
+    and #LUNG_FB_DISABLE_7
+    sta $d015
+
+lung_fb_next:
+    inx
+    cpx #2
+    beq lung_fb_done_all
+    jmp lung_fb_loop
+lung_fb_done_all:
+    rts
+
+
+// Check whether the player's kick lands on Lung this tick.
+// One hit per kick animation, guarded by kick_hit_done.
+check_lung_kick_hit:
+    lda lung_active
+    beq clk_exit
+    lda lung_state
+    cmp #LUNG_STATE_DEAD
+    beq clk_exit
+    lda pose_mode
+    cmp #POSE_MODE_KICK
+    bne clk_exit
+    lda kick_hit_done
+    bne clk_exit
+
+    jsr lung_calc_distance
+    cmp #LUNG_KICK_RANGE
+    bcs clk_exit
+
+    // kick lands
+    lda #1
+    sta kick_hit_done
+    jsr sfx_hit
+    dec boss_hp
+    jsr draw_boss_life
+
+    // check death
+    lda boss_hp
+    bne clk_recoil
+    lda #LUNG_STATE_DEAD
+    sta lung_state
+    lda #LUNG_LD_PTR
+    sta $07fd
+    jsr open_temple_door
+    jmp clk_exit
+
+clk_recoil:
+    lda #LUNG_STATE_RECOIL
+    sta lung_state
+    lda #LUNG_RECOIL_TICKS
+    sta lung_state_timer
+    lda lung_dir
+    bne clk_recoil_sprite_left
+    lda #LUNG_R0_PTR
+    jmp clk_recoil_sprite_set
+clk_recoil_sprite_left:
+    lda #LUNG_L0_PTR
+clk_recoil_sprite_set:
+    sta $07fd
+
+clk_exit:
+    rts
+
+
+// Check whether any active fireball hits the player this tick.
+// Jumping counts as a dodge (POSE_MODE_JUMP skips the check).
+check_lung_fb_hit:
+    ldx #0
+clfh_loop:
+    lda lung_fb_state,x
+    beq clfh_next
+
+    // dodge: jumping player is immune
+    lda pose_mode
+    cmp #POSE_MODE_JUMP
+    beq clfh_next
+    // don't double-hit while already in hit pose
+    cmp #POSE_MODE_HIT
+    beq clfh_next
+
+    // X distance check (16-bit fireball X vs player X)
+    cpx #0
+    bne clfh_x_slot1
+    lda lung_fb_x_lo
+    sta lung_temp_lo
+    lda lung_fb_x_hi
+    sta lung_temp_hi
+    jmp clfh_x_compare
+clfh_x_slot1:
+    lda lung_fb_x_lo+1
+    sta lung_temp_lo
+    lda lung_fb_x_hi+1
+    sta lung_temp_hi
+
+clfh_x_compare:
+    lda lung_temp_lo
+    sec
+    sbc $d000                    // player X lo
+    bcs clfh_x_pos
+    eor #$ff
+    clc
+    adc #1
+clfh_x_pos:
+    cmp #LUNG_FB_HIT_DX
+    bcs clfh_next
+
+    // Y distance check
+    cpx #0
+    bne clfh_y_slot1
+    lda lung_fb_y
+    jmp clfh_y_compare
+clfh_y_slot1:
+    lda lung_fb_y+1
+clfh_y_compare:
+    sec
+    sbc $d001                    // player Y
+    bcs clfh_y_pos
+    eor #$ff
+    clc
+    adc #1
+clfh_y_pos:
+    cmp #LUNG_FB_HIT_DY
+    bcs clfh_next
+
+    // hit confirmed — deactivate fireball
+    lda #$00
+    sta lung_fb_state,x
+    cpx #0
+    bne clfh_dis_slot1
+    lda $d015
+    and #LUNG_FB_DISABLE_6
+    sta $d015
+    jmp clfh_hit
+clfh_dis_slot1:
+    lda $d015
+    and #LUNG_FB_DISABLE_7
+    sta $d015
+
+clfh_hit:
+    jsr start_hit
+    rts
+
+clfh_next:
+    inx
+    cpx #2
+    beq clfh_done_all
+    jmp clfh_loop
+clfh_done_all:
+    rts
+
+
 // Entry point for game
 * = $6000
 game_start:
-    // Make screen cyan and text white
-    lda #GAME_TOP_COLOR
+    // --- Reset all game state so a restart after game-over is clean ---
+    lda #$00
+    sta bg_scroll_offset
+    sta right_scroll_count
+    sta scroll_locked
+    sta door_open
+    sta pose_mode
+    sta pose_timer
+    sta pose_tick_counter
+    sta jump_step
+    sta jump_cooldown_active
+    sta kick_hit_done
+    sta kuro_active
+    sta kuro_x_lo
+    sta kuro_x_hi
+    sta kuro_anim_frame
+    sta kuro_anim_timer
+    sta kuro_walk_timer
+    sta kuro_state_timer
+    sta kuro_hit_cooldown
+    lda #KURO_STATE_WALK
+    sta kuro_state
+    lda #$01                    // kuro starts facing left
+    sta kuro_dir
+    // reset Lung dragon state (level 2 boss)
+    lda #$00
+    sta lung_active
+    sta lung_x_lo
+    sta lung_x_hi
+    sta lung_anim_frame
+    sta lung_anim_timer
+    sta lung_walk_timer
+    sta lung_state_timer
+    sta lung_hit_cooldown
+    sta lung_breath_tick
+    sta lung_fb_state
+    sta lung_fb_state+1
+    sta lung_fb_x_lo
+    sta lung_fb_x_lo+1
+    sta lung_fb_x_hi
+    sta lung_fb_x_hi+1
+    sta lung_fb_y
+    sta lung_fb_y+1
+    sta lung_fb_anim_timer
+    sta lung_fb_anim_timer+1
+    sta lung_fb_frame
+    sta lung_fb_frame+1
+    lda #LUNG_STATE_WALK
+    sta lung_state
+    lda #$01
+    sta lung_dir               // starts facing left (spawns from right)
+    // disable fireball sprites 6 & 7
+    lda $d015
+    and #%00111111
+    sta $d015
+    lda #HUD_LIFE_MAX
+    sta player_hp
+    lda #BOSS_LIFE_MAX
+    sta boss_hp
+    // current_level is NOT reset here — it is set to 1 at start (main.asm)
+    // and incremented when the hero exits the temple (ti_show_level2)
+
+    // Set background and border color based on current level
+    ldx current_level
+    dex                            // convert 1-based level to 0-based index
+    lda bg_color_by_level,x
     sta $d020
     sta $d021
 
@@ -199,6 +1052,7 @@ game_start:
     sta $d000          // sprite 0 X
     lda #GAME_SPRITE0_Y
     sta $d001          // sprite 0 Y
+    sta player_ground_y // reset to floor on every game start
 
     lda $d010          // clear MSB of sprite 0 X
     and #%11111110
@@ -230,6 +1084,20 @@ game_main_loop:
     jsr update_pose_state
     bne game_main_loop
     jsr update_kuro
+    jsr update_lung
+    jsr update_lung_fireballs
+
+    // --- Check door entry: player walks into open temple entrance ---
+    lda door_open
+    beq ti_door_skip
+    lda $d010
+    and #%00000001          // sprite 0 X MSB
+    bne ti_door_skip        // MSB=1: player beyond pixel 255, not at door
+    lda $d000
+    cmp #168                // door left edge ≈ pixel 168; trigger when sprite reaches it
+    bcc ti_door_skip
+    jmp temple_interior_start
+ti_door_skip:
 
     lda scroll_locked
     bne arena_input
@@ -751,6 +1619,53 @@ temple_window_done:
     rts
 
 
+// open_temple_door — patch temple tile + color tables to show a black entrance.
+// Called once when Kuro transitions to KURO_STATE_DEAD.
+// Modifies temple_row{3,4,5}_tiles[8..11] = TILE_DOOR ($1d)
+// and  temple_row{3,4,5}_colors[8..11]    = $00 (black).
+// draw_temple_overlay reads these tables every frame, so the door
+// appears automatically on the very next redraw.
+open_temple_door:
+    lda door_open
+    bne otd_done             // idempotent: patch only once
+
+    // --- tiles: 12 cells (4 cols × 3 rows) ---
+    lda #TILE_DOOR
+    sta temple_row3_tiles + 8
+    sta temple_row3_tiles + 9
+    sta temple_row3_tiles + 10
+    sta temple_row3_tiles + 11
+    sta temple_row4_tiles + 8
+    sta temple_row4_tiles + 9
+    sta temple_row4_tiles + 10
+    sta temple_row4_tiles + 11
+    sta temple_row5_tiles + 8
+    sta temple_row5_tiles + 9
+    sta temple_row5_tiles + 10
+    sta temple_row5_tiles + 11
+
+    // --- colors: same 12 cells → colour RAM $00 = black ---
+    lda #$00
+    sta temple_row3_colors + 8
+    sta temple_row3_colors + 9
+    sta temple_row3_colors + 10
+    sta temple_row3_colors + 11
+    sta temple_row4_colors + 8
+    sta temple_row4_colors + 9
+    sta temple_row4_colors + 10
+    sta temple_row4_colors + 11
+    sta temple_row5_colors + 8
+    sta temple_row5_colors + 9
+    sta temple_row5_colors + 10
+    sta temple_row5_colors + 11
+
+    lda #1
+    sta door_open
+    jsr draw_temple_overlay     // force immediate repaint — background not redrawn in arena mode
+otd_done:
+    rts
+
+
 draw_temple_overlay:
     lda temple_state
     cmp #$01
@@ -980,14 +1895,30 @@ update_pose_state:
     rts
 
 pose_advance_step:
+    lda pose_mode                   // use longer tick rate for jump so arc is clearly visible
+    cmp #POSE_MODE_JUMP
+    bne pose_tick_normal
+    lda #JUMP_TICK_DIVIDER-1
+    sta pose_tick_counter
+    jmp pose_tick_dec
+pose_tick_normal:
     lda #POSE_TICK_DIVIDER-1
     sta pose_tick_counter
+pose_tick_dec:
     dec pose_timer
 
     lda pose_mode
     cmp #POSE_MODE_JUMP
-    bne pose_check_finish
+    bne pose_hit_check
     jsr update_jump_motion
+    jmp pose_check_finish
+
+pose_hit_check:
+    cmp #POSE_MODE_HIT              // sync hit animation to raster so it's visible for ≥1 frame
+    bne pose_check_finish
+    sei
+    jsr wait_frame_safe_window
+    cli
 
 pose_check_finish:
     lda pose_timer
@@ -997,11 +1928,21 @@ pose_check_finish:
     rts
 
 pose_finish:
+    // start 1-second cooldown if this was a jump, before clearing pose_mode
+    lda pose_mode
+    cmp #POSE_MODE_JUMP
+    bne pose_finish_reset
+    lda $a2                        // record jiffy clock when jump ended
+    sta jump_cooldown_jiffy
+    lda #$01
+    sta jump_cooldown_active
+
+pose_finish_reset:
     lda #POSE_MODE_NONE
     sta pose_mode
     lda #$00
     sta jump_step
-    lda #GAME_SPRITE0_Y
+    lda player_ground_y             // land on the current surface (floor or a platform)
     sta $d001
     ldy anim_frame
     jsr set_sprite_frame_from_table
@@ -1029,6 +1970,17 @@ pose_check_kneel:
     jsr key_w_pressed
     beq pose_check_jump
 
+    // 1-second cooldown: block re-jump for JUMP_COOLDOWN_TICKS jiffies after landing
+    lda jump_cooldown_active
+    beq pose_do_jump               // no cooldown active: allow jump
+    lda $a2
+    sec
+    sbc jump_cooldown_jiffy        // 8-bit delta wraps correctly across $ff→$00
+    cmp #JUMP_COOLDOWN_TICKS
+    bcc pose_check_jump            // still cooling down: skip to S-key check
+    lda #$00                       // cooldown expired: clear flag
+    sta jump_cooldown_active
+pose_do_jump:
     jsr start_jump
     lda #$01
     rts
@@ -1138,11 +2090,102 @@ update_jump_motion:
     ldx #JUMP_DURATION_TICKS-1
 
 jump_step_ok:
-    lda #GAME_SPRITE0_Y
+    lda player_ground_y             // jump arc is relative to current standing surface
     clc
     adc jump_y_offsets,x
     sta $d001
+
+    // apply horizontal movement while airborne (first JUMP_AIR_STEPS steps)
+    cpx #JUMP_AIR_STEPS
+    bcs jump_no_x                   // step >= 25: on ground, no X movement
+
+    lda scroll_locked
+    bne jump_x_arena                // scroll_locked=1: arena mode
+
+    lda anim_dir                    // scrolling mode: scroll world in facing direction
+    bne jump_x_scroll_left
+    jsr scroll_background_left      // facing right → world moves left
+    jmp jump_no_x
+jump_x_scroll_left:
+    jsr scroll_background_right     // facing left → world moves right
+    jmp jump_no_x
+
+jump_x_arena:
+    sei                             // wait for raster safe window so X updates once per frame
+    jsr wait_frame_safe_window
+    cli
+    lda anim_dir                    // arena/level2: move sprite in facing direction
+    bne jump_x_arena_left
+    jsr jump_arena_move_right
+    jmp jump_no_x
+jump_x_arena_left:
+    jsr jump_arena_move_left
+
+jump_no_x:
     inc jump_step
+    rts
+
+
+// Move player sprite right by 1px during jump (arena/level2), with 9-bit X boundary clamping.
+jump_arena_move_right:
+    lda $d010
+    and #%00000001
+    bne jump_ar_msb
+    lda $d000
+    cmp #255                   // X = 255: next step crosses into MSB territory
+    bcs jump_ar_set_msb
+    clc
+    adc #$01
+    sta $d000
+    rts
+jump_ar_set_msb:
+    lda #$00                   // 255 + 1 wraps to 0 in MSB=1 range
+    sta $d000
+    lda $d010
+    ora #%00000001             // set MSB
+    sta $d010
+    rts
+jump_ar_msb:
+    lda $d000
+    cmp #88                    // hard right limit (screen position 344)
+    bcs jump_ar_done
+    clc
+    adc #$01
+    cmp #89
+    bcc jump_ar_msb_ok
+    lda #88
+jump_ar_msb_ok:
+    sta $d000
+jump_ar_done:
+    rts
+
+
+// Move player sprite left by 1px during jump (arena/level2), with 9-bit X boundary clamping.
+jump_arena_move_left:
+    lda $d010
+    and #%00000001
+    bne jump_al_msb
+    lda $d000
+    cmp #25                    // hard left limit: X < 25 → already at/below position 24
+    bcc jump_al_done
+    sec
+    sbc #$01
+    sta $d000
+    rts
+jump_al_msb:
+    lda $d000
+    beq jump_al_cross          // X = 0 with MSB=1: cross back to MSB=0 territory
+    sec
+    sbc #$01
+    sta $d000
+    rts
+jump_al_cross:
+    lda #255                   // position 255 (MSB=0) is safely within screen bounds
+    sta $d000
+    lda $d010
+    and #%11111110             // clear MSB
+    sta $d010
+jump_al_done:
     rts
 
 
@@ -1158,7 +2201,11 @@ start_hit:
     jsr set_hit_frame
     dec player_hp
     jsr draw_hud_life
+    lda player_hp
+    beq start_hit_game_over
     rts
+start_hit_game_over:
+    jmp game_over
 
 
 set_hit_frame:
@@ -1301,7 +2348,7 @@ check_spawn_triggers:
     lda right_scroll_count
 
     cmp #TRIGGER_SCROLL_1
-    bne check_trigger_2
+    bcc check_trigger_2             // skip if count < trigger
     lda proj_spawn_flags
     bne check_trigger_2
     lda #$01
@@ -1313,7 +2360,7 @@ check_spawn_triggers:
 check_trigger_2:
     lda right_scroll_count
     cmp #TRIGGER_SCROLL_2
-    bne check_trigger_3
+    bcc check_trigger_3             // skip if count < trigger
     lda proj_spawn_flags+1
     bne check_trigger_3
     lda #$01
@@ -1325,7 +2372,7 @@ check_trigger_2:
 check_trigger_3:
     lda right_scroll_count
     cmp #TRIGGER_SCROLL_3
-    bne check_trigger_4
+    bcc check_trigger_4             // skip if count < trigger
     lda proj_spawn_flags+2
     bne check_trigger_4
     lda #$01
@@ -1337,9 +2384,8 @@ check_trigger_3:
 check_trigger_4:
     lda right_scroll_count
     cmp #TRIGGER_SCROLL_4
-    beq do_trigger_4
-    rts
-do_trigger_4:
+    bcc check_spawn_done            // skip if count < trigger
+
     lda proj_spawn_flags+3
     bne check_spawn_done
     lda #$01
@@ -1427,6 +2473,8 @@ check_collisions:
     lda pose_mode
     cmp #POSE_MODE_HIT
     beq collision_done
+    cmp #POSE_MODE_JUMP         // player is airborne: projectiles pass through
+    beq collision_done
 
     ldx #$00
 collision_loop:
@@ -1497,6 +2545,8 @@ collision_next:
 
 collision_done:
     jsr check_kuro_kick_hit    // check player kick vs Kuro on every loop tick
+    jsr check_lung_kick_hit    // check player kick vs Lung (level 2)
+    jsr check_lung_fb_hit      // check Lung fireballs vs player
     rts
 
 
@@ -1545,6 +2595,7 @@ ckk_recoil_set:
     sta kuro_state
     lda #KURO_LD_PTR
     sta $07fd
+    jsr open_temple_door   // reveal black entrance between the middle pillars
 ckk_exit:
     rts
 
@@ -1571,7 +2622,17 @@ init_hud_text_loop:
     inx
     cpx #HUD_TEXT_LEN
     bne init_hud_text_loop
+    // blank cols 30–39 (boss HUD zone) so $e544's $20 fill (= L in custom charset) never shows
+    ldx #$00
+init_hud_blank_boss_zone:
+    lda #$00
+    sta HUD_SCREEN_ADDR + 30,x
+    sta HUD_COLOR_ADDR  + 30,x
+    inx
+    cpx #10
+    bne init_hud_blank_boss_zone
     jsr draw_hud_life
+    jsr draw_hud_level
     rts
 
 
@@ -1598,7 +2659,51 @@ draw_hud_life_next:
     rts
 
 
+// draw_hud_level — write "LVL:<digit>" at HUD_LEVEL_COL (col 17) in cyan.
+// Reads current_level (1-based); digit screen code = HUD_DIGIT0_CHAR + current_level.
+// Also blanks the surrounding middle zone (cols 15–29) with $00 so that
+// $e544's $20 fill (= L in the custom charset) never leaks through.
+draw_hud_level:
+    // blank middle zone cols 15–29 on screen and color RAM
+    ldx #$00
+dhl_blank:
+    lda #$00
+    sta HUD_SCREEN_ADDR + 15,x
+    sta HUD_COLOR_ADDR  + 15,x
+    inx
+    cpx #15                        // 15 cols (15..29)
+    bne dhl_blank
+    // write static prefix: L V L :
+    lda #HUD_L_CHAR
+    sta HUD_SCREEN_ADDR + HUD_LEVEL_COL
+    lda #HUD_V_CHAR
+    sta HUD_SCREEN_ADDR + HUD_LEVEL_COL + 1
+    lda #HUD_L_CHAR
+    sta HUD_SCREEN_ADDR + HUD_LEVEL_COL + 2
+    lda #HUD_COLON_CHAR
+    sta HUD_SCREEN_ADDR + HUD_LEVEL_COL + 3
+    // write digit: base code $23 = '0'; level 1 → $24, level 2 → $25, etc.
+    lda current_level
+    clc
+    adc #HUD_DIGIT0_CHAR           // $23 + level
+    sta HUD_SCREEN_ADDR + HUD_LEVEL_COL + 4
+    // write colour (yellow = $07) for all 5 chars — visible on both cyan and black backgrounds
+    lda #HUD_LEVEL_COLOR
+    sta HUD_COLOR_ADDR + HUD_LEVEL_COL
+    sta HUD_COLOR_ADDR + HUD_LEVEL_COL + 1
+    sta HUD_COLOR_ADDR + HUD_LEVEL_COL + 2
+    sta HUD_COLOR_ADDR + HUD_LEVEL_COL + 3
+    sta HUD_COLOR_ADDR + HUD_LEVEL_COL + 4
+    rts
+
+
 show_boss_hud:
+    // choose boss name and spawn routine based on current level
+    lda current_level
+    cmp #2
+    beq show_boss_hud_lung
+
+    // Level 1 (and any other): Kuro
     ldx #$00
 boss_hud_text_loop:
     lda boss_hud_text,x
@@ -1608,11 +2713,28 @@ boss_hud_text_loop:
     inx
     cpx #BOSS_HUD_TEXT_LEN
     bne boss_hud_text_loop
-    // add space between text and hearts
-    lda #$20
+    // add blank separator between text and hearts
+    lda #$00
     sta HUD_SCREEN_ADDR + BOSS_HUD_TEXT_COL + BOSS_HUD_TEXT_LEN
     jsr draw_boss_life
     jsr spawn_kuro
+    rts
+
+show_boss_hud_lung:
+    // Level 2: Lung — write "LUNG" in green
+    ldx #$00
+boss_hud_lung_loop:
+    lda lung_hud_text,x
+    sta HUD_SCREEN_ADDR + BOSS_HUD_TEXT_COL,x
+    lda #$05                               // green text
+    sta HUD_COLOR_ADDR + BOSS_HUD_TEXT_COL,x
+    inx
+    cpx #BOSS_HUD_TEXT_LEN
+    bne boss_hud_lung_loop
+    lda #$00
+    sta HUD_SCREEN_ADDR + BOSS_HUD_TEXT_COL + BOSS_HUD_TEXT_LEN
+    jsr draw_boss_life
+    jsr spawn_lung
     rts
 
 
@@ -1940,6 +3062,7 @@ kuro_die:
     sta kuro_state
     lda #KURO_LD_PTR
     sta $07fd
+    jsr open_temple_door   // reveal black entrance between the middle pillars
     jmp update_kuro_done
 
     // --- KURO_STATE_RECOIL ---
@@ -2095,6 +3218,9 @@ kuro_upd_clear_msb:
     rts
 
 
+// Lung routines are placed at $5200 (see below, before * = $6000)
+
+
 // --- Game Over screen --------------------------------------------------------
 game_over:
     // disable all sprites
@@ -2125,36 +3251,190 @@ game_over_sid:
     sta $d016
 
     // clear screen
+    jsr gameover_music_init        // init jingle state + trigger first note
     jsr $e544
 
-    // display "GAME OVER" centered on row 12 (screen addr $0400 + 12*40 + 15 = $05e7)
+    // display "GAME OVER" centered on row 12, cols 15-23
+    // $0400 + 12*40 + 15 = $05ef   color: $d800 + 12*40 + 15 = $d9ef
     ldx #$00
 game_over_text_loop:
     lda game_over_text,x
-    sta $05e7,x
+    sta $05ef,x
     lda #$01                       // white text
-    sta $d9e7,x
+    sta $d9ef,x
     inx
     cpx #game_over_text_end - game_over_text
     bne game_over_text_loop
 
-    // wait ~3 seconds (150 jiffies)
+    // wait 240 jiffies (~4.8 s): 10 notes × 20 ticks + ~40 ticks release fade
+    lda #$00
+    sta kuro_temp_lo               // tick counter lo
+    sta kuro_temp_hi               // tick counter hi
     lda $a2
-    clc
-    adc #150
-    sta kuro_temp_lo
+    sta game_over_last_jiffy
 game_over_wait:
     lda $a2
-    cmp kuro_temp_lo
-    bne game_over_wait
+    cmp game_over_last_jiffy
+    beq game_over_wait             // same jiffy: keep waiting
+    sta game_over_last_jiffy       // new tick
+    jsr gameover_music_play        // advance jingle by one tick
+    inc kuro_temp_lo
+    bne game_over_count_chk
+    inc kuro_temp_hi
+game_over_count_chk:
+    lda kuro_temp_hi
+    bne game_over_done             // hi byte non-zero → well past 240
+    lda kuro_temp_lo
+    cmp #240
+    bcc game_over_wait             // not yet 240 ticks
 
+game_over_done:
     // return to title screen
     jmp start
+
+ // --- Game-over SID jingle — Japanese koto style --------------------------
+ // In-scale (Japanese pentatonic minor) descending phrase with ornament,
+ // evoking a traditional koto pluck sound.
+ //
+ // Voice 1: sawtooth — sharp attack/fast decay = koto pluck
+ //   ADSR: attack=0, decay=6, sustain=8, release=4   → $06 / $84
+ // Voice 3: triangle — softer resonant under-tone, one octave below
+ //   ADSR: attack=1, decay=8, sustain=4, release=8   → $18 / $48
+ //
+ // Melody (10 notes, 20 ticks each = 0.4 s per note @ 50 Hz PAL):
+ //   D4(37) A3(32) G3(30) E3(27) D3(25) E3(27) G3(30) A3(32) G3(30) D3(25)
+ // Bass one octave below: subtract 12 from each index.
+ //   D3(25) A2(20) G2(18) E2(15) D2(13) E2(15) G2(18) A2(20) G2(18) D2(13)
+ //
+ // All 3 voices are free here — SID was zeroed in game_over before we arrive.
+
+.const GO_NOTE_COUNT    = 10
+.const GO_NOTE_TICKS    = 20       // jiffy ticks per note (= 0.4 s @ 50 Hz PAL)
+.const GO_V1_AD         = $06      // attack=0, decay=6  — sharp koto pluck
+.const GO_V1_SR         = $84      // sustain=8, release=4
+.const GO_V3_AD         = $18      // attack=1, decay=8  — softer resonant bass
+.const GO_V3_SR         = $48      // sustain=4, release=8
+
+// ============================================================
+// gameover_music_init — set up voices 1 & 3 for the Japanese koto jingle.
+// Call once before the game-over wait loop.  Trashes A, X.
+// ============================================================
+gameover_music_init:
+    // Reset sequencer state
+    lda #$00
+    sta go_note_pos
+    lda #GO_NOTE_TICKS
+    sta go_note_timer
+
+    // --- Voice 1: sawtooth koto lead ---
+    lda #GO_V1_AD
+    sta $d405                       // attack/decay, voice 1
+    lda #GO_V1_SR
+    sta $d406                       // sustain/release, voice 1
+
+    // --- Voice 3: triangle resonant bass ---
+    lda #GO_V3_AD
+    sta $d412                       // attack/decay, voice 3
+    lda #GO_V3_SR
+    sta $d413                       // sustain/release, voice 3
+
+    // Trigger first note immediately (note 0 = D4)
+    ldx #$00
+    jsr go_trigger_note
+    rts
+
+// ============================================================
+// gameover_music_play — advance jingle sequencer by one tick.
+// Call once per jiffy inside the game-over wait loop.  Trashes A, X.
+// ============================================================
+gameover_music_play:
+    dec go_note_timer
+    bne go_play_done               // still counting down current note
+
+    // Note expired — check if sequence is finished
+    lda go_note_pos
+    cmp #(GO_NOTE_COUNT - 1)
+    beq go_release_last            // last note: gate off & stop
+
+    // Advance to next note
+    inc go_note_pos
+    lda #GO_NOTE_TICKS
+    sta go_note_timer
+    ldx go_note_pos
+    jsr go_trigger_note
+go_play_done:
+    rts
+
+go_release_last:
+    // Gate off both voices — let release envelope tail out naturally
+    lda #%00100000                  // sawtooth, gate=0 — voice 1
+    sta $d404                       // voice 1 control register
+    lda #%00010000                  // triangle, gate=0 — voice 3
+    sta $d411                       // voice 3 control register
+    // Park timer so we never re-enter note logic
+    lda #$ff
+    sta go_note_timer
+    rts
+
+// ============================================================
+// go_trigger_note — X = 0-based note index into go_note_table.
+// Writes freq to voice 1 (sawtooth koto) and voice 3 (triangle bass,
+// one octave below via go_bass_table).  Trashes A, X.
+// ============================================================
+go_trigger_note:
+    // --- Voice 3 bass (triangle, one octave below) ---
+    lda go_bass_table,x             // bass freq table index
+    tay                             // Y = bass index
+    lda freq_lo,y
+    sta $d40e                       // voice 3 freq lo
+    lda freq_hi,y
+    sta $d40f                       // voice 3 freq hi
+    // Gate off first (hard restart) then gate on — avoids click artefact
+    lda #%00010000                  // triangle, gate=0
+    sta $d411                       // voice 3 control register
+    lda #%00010001                  // triangle, gate=1
+    sta $d411                       // voice 3 control register
+
+    // --- Voice 1 lead (sawtooth koto) ---
+    lda go_note_table,x             // lead freq table index
+    tax                             // X = lead index
+    lda freq_lo,x
+    sta $d400                       // voice 1 freq lo
+    lda freq_hi,x
+    sta $d401                       // voice 1 freq hi
+    // Hard restart: gate off then immediately gate on for crisp attack
+    lda #%00100000                  // sawtooth, gate=0
+    sta $d404                       // voice 1 control register
+    lda #%00100001                  // sawtooth, gate=1
+    sta $d404                       // voice 1 control register
+    rts
+
+// ============================================================
+// Note tables — 0-based indices into freq_lo/freq_hi PAL table.
+// Japanese in-scale phrase: D4 A3 G3 E3 D3 E3 G3 A3 G3 D3
+// Lead (voice 1): D4=37, A3=32, G3=30, E3=27, D3=25
+// Bass (voice 3): one octave below, indices -12:
+//   D3=25, A2=20, G2=18, E2=15, D2=13
+// ============================================================
+go_note_table:
+    .byte 37, 32, 30, 27, 25, 27, 30, 32, 30, 25   // D4 A3 G3 E3 D3 E3 G3 A3 G3 D3
+
+go_bass_table:
+    .byte 25, 20, 18, 15, 13, 15, 18, 20, 18, 13   // D3 A2 G2 E2 D2 E2 G2 A2 G2 D2
 
 // "GAME OVER" in PETSCII screen codes
 game_over_text:
     .byte $07,$01,$0d,$05,$20,$0f,$16,$05,$12  // G A M E   O V E R
 game_over_text_end:
+
+game_over_last_jiffy:
+    .byte $00
+
+go_note_pos:
+    .byte $00          // current note index into go_note_table (0–9)
+
+go_note_timer:
+    .byte $00          // jiffy ticks remaining on current note
 
 bg_scroll_offset:
     .byte 0
@@ -2210,6 +3490,15 @@ pose_tick_counter:
 jump_step:
     .byte 0
 
+jump_cooldown_active:
+    .byte 0                        // 1 while jump cooldown is in effect
+
+jump_cooldown_jiffy:
+    .byte 0                        // $a2 value recorded when cooldown started
+
+player_ground_y:
+    .byte GAME_SPRITE0_Y           // current standing surface Y; updated when landing on a platform
+
 player_hp:
     .byte HUD_LIFE_MAX
 
@@ -2263,6 +3552,79 @@ kuro_hit_cooldown:
 kuro_dir:
     .byte 1                        // 0=facing right, 1=facing left
 
+// Lung dragon boss state (level 2)
+lung_active:
+    .byte 0
+lung_x_lo:
+    .byte 0
+lung_x_hi:
+    .byte 0
+lung_anim_frame:
+    .byte 0
+lung_anim_timer:
+    .byte 0
+lung_walk_timer:
+    .byte 0
+lung_state:
+    .byte LUNG_STATE_WALK
+lung_state_timer:
+    .byte 0
+lung_dir:
+    .byte 1                        // 0=facing right, 1=facing left
+lung_hit_cooldown:
+    .byte 0
+lung_breath_tick:
+    .byte 0                        // count-up within breath cycle
+
+// Fireball pool: index 0 = sprite 6, index 1 = sprite 7
+lung_fb_state:
+    .fill 2, 0                     // 0=inactive, 1=active
+lung_fb_x_lo:
+    .fill 2, 0
+lung_fb_x_hi:
+    .fill 2, 0
+lung_fb_y:
+    .fill 2, 0
+lung_fb_anim_timer:
+    .fill 2, 0
+lung_fb_frame:
+    .fill 2, 0
+lung_fb_dir:
+    .fill 2, 0                     // 0=travelling right, 1=travelling left
+lung_fb_last_jiffy:
+    .byte 0                        // jiffy gate — fireballs move once per jiffy (matches knife speed)
+
+lung_anim_ptrs_left:
+    .byte LUNG_L0_PTR, LUNG_L1_PTR, LUNG_L2_PTR
+lung_anim_ptrs_right:
+    .byte LUNG_R0_PTR, LUNG_R1_PTR, LUNG_R2_PTR
+// Fireball frame pointer tables indexed by direction (0=right, 1=left)
+lung_fb_ptrs_frame0:
+    .byte LUNG_FBR0_PTR, LUNG_FBL0_PTR
+lung_fb_ptrs_frame1:
+    .byte LUNG_FBR1_PTR, LUNG_FBL1_PTR
+
+lung_hud_text:                     // "LUNG" in custom charset ($20=L, $1b=U, $1e=N, $15=G)
+    .byte $20,$1b,$1e,$15
+
+lung_temp_lo:
+    .byte 0
+lung_temp_hi:
+    .byte 0
+
+door_open:
+    .byte 0                        // 0=closed, 1=open (set when Kuro is defeated)
+
+current_level:
+    .byte 1                        // 1-based level counter; shown in HUD centre
+
+// background/border color per level — indexed by current_level (1-based → subtract 1)
+bg_color_by_level:
+    .byte GAME_BG_COLOR_L1         // level 1: cyan    ($03)
+    .byte GAME_BG_COLOR_L2         // level 2: light blue ($0e)
+    .byte GAME_BG_COLOR_L3         // level 3: blue    ($06)
+    .byte GAME_BG_COLOR_L4         // level 4: black   ($00)
+
 kuro_anim_ptrs_left:
     .byte KURO_L0_PTR, KURO_L1_PTR, KURO_L2_PTR
 
@@ -2270,10 +3632,10 @@ kuro_anim_ptrs_right:
     .byte KURO_R0_PTR, KURO_R1_PTR, KURO_R2_PTR
 
 jump_y_offsets:
-    .byte $00,$fe,$fc,$fa,$f8,$f6,$f4,$f2
-    .byte $f0,$ee,$ec,$ea,$e8,$e8,$ea,$ec
-    .byte $ee,$f0,$f2,$f4,$f6,$f8,$fa,$fc
-    .byte $fe,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$fc,$f8,$f4,$f0,$ec,$e8,$e4
+    .byte $e0,$dc,$d8,$d4,$d0,$d0,$d4,$d8
+    .byte $dc,$e0,$e4,$e8,$ec,$f0,$f4,$f8
+    .byte $fc,$00,$00,$00,$00,$00,$00,$00
 
 anim_ptrs_right:
     .byte GAME_RIGHT0_PTR, GAME_RIGHT1_PTR, GAME_RIGHT2_PTR
@@ -2282,7 +3644,7 @@ anim_ptrs_left:
     .byte GAME_LEFT0_PTR, GAME_LEFT1_PTR, GAME_LEFT2_PTR
 
 hud_text:  // "KARATEGAI " in game charset screen codes ($10-$16 = K,A,R,T,E,G,I)
-    .byte $10,$11,$12,$11,$13,$14,$15,$11,$16,$20
+    .byte $10,$11,$12,$11,$13,$14,$15,$11,$16,$00  // trailing $00 = blank (not $20 which = L in custom charset)
 
 boss_hud_text:  // "KURO" in game charset screen codes ($10=K, $1b=U, $12=R, $1c=O)
     .byte $10,$1b,$12,$1c

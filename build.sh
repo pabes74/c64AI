@@ -85,7 +85,7 @@ compile "$SCRIPT_DIR/loader.asm"
 # Files are named to match what the loader KERNAL-LOADs: 'loader' (autostarted
 # by run.sh) and 'main' (the game, pulled in by the loader).
 echo ">> Packing $D64"
-c1541 -format "c64stuff,01" d64 "$D64" \
+c1541 -format "aifist,01" d64 "$D64" \
       -attach "$D64" \
       -write "$BIN/loader.prg" loader \
       -write "$BIN/main.prg" main

@@ -14,7 +14,7 @@ if (!(Test-Path $d64Folder)) {
 }
 
 # Create/overwrite D64 image
-& $vicePath -format "c64stuff,01" d64 $d64File
+& $vicePath -format "aifist,01" d64 $d64File
 
 Get-ChildItem -Path $prgFolder -Filter *.prg | ForEach-Object {
     $baseName = $_.BaseName.ToLower()

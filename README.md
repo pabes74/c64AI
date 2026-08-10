@@ -4,6 +4,43 @@ A Commodore 64 side-scrolling karate game written in 6502 assembly using KickAss
 
 ---
 
+## Play the Game
+
+**Download the disk image: [`aifist.d64`](aifist.d64)** — a ready-to-run C64 disk with the game on it. No building required.
+
+To run it you need the free [VICE](https://vice-emu.sourceforge.io/) Commodore 64 emulator (the `x64sc` executable), available for Windows, macOS, and Linux.
+
+### Option 1 — Command line (quickest)
+
+Download `aifist.d64`, then from a terminal:
+
+```
+x64sc -autostart aifist.d64:loader
+```
+
+The game boots and starts automatically.
+
+### Option 2 — From the VICE menu
+
+1. Launch `x64sc`.
+2. Choose **File ▸ Autostart disk/tape image…** and select the downloaded `aifist.d64`.
+3. In the file picker, pick the `loader` program. The game starts automatically.
+
+You can also just **drag and drop** `aifist.d64` onto the emulator window.
+
+### Option 3 — From the C64 BASIC prompt
+
+If you attach the disk to drive 8 manually (**File ▸ Attach disk image ▸ Drive 8**), type at the `READY.` prompt:
+
+```
+LOAD"LOADER",8,1
+RUN
+```
+
+> Tip: enable **True Drive Emulation** in VICE (default in recent versions) so the loader runs correctly.
+
+---
+
 ## Building
 
 From the repo root:

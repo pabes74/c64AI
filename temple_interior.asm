@@ -11,13 +11,13 @@
 // Color RAM values:
 //   bit 3 = 1 → multicolor char: %11 pixel-pair = bits 2-0 of color byte
 //   bit 3 = 0 → hi-res char: 0-bit=$d021, 1-bit=full nibble
-.const TI_CCEIL  = $09          // MC + brown  — ceiling / walls
-.const TI_CFLOOR = $0f          // MC + yellow — road-texture floor
-.const TI_CGRASS = $05          // hi-res green — grass accent strip
-.const TI_CBASE  = $09          // MC + brown  — floor base row
-.const TI_CPLAT  = $0f          // MC + yellow — platform tiles
-.const TI_CWALL  = $09          // MC + brown  — left/right wall columns
-.const TI_CAIR   = $00          // black — invisible against black $d021
+.const TI_CCEIL  = $0f          // MC + yellow — wooden ceiling beams
+.const TI_CFLOOR = $0f          // MC + yellow — plank floor highlight
+.const TI_CGRASS = $0f          // MC + yellow — lower plank floor
+.const TI_CBASE  = $08          // MC + black  — stones below the floor
+.const TI_CPLAT  = $0f          // MC + yellow — wooden platform planks
+.const TI_CWALL  = $0f          // MC + yellow — left/right wall beams
+.const TI_CAIR   = $00          // blank cells → blue night sky ($d021)
 
 // Player spawn: bottom-left, Y MUST equal GAME_SPRITE0_Y so that
 // update_jump_motion and pose_finish reset the sprite to the correct ground Y.
@@ -104,15 +104,16 @@
 .const TI_P3_Y   = 118          // row 11 platform
 .const TI_P4_Y   = 134          // row 13 platform (P4 and P5 share this row)
 
-* = $7800
+* = $7880   // moved up from $7800: the Dusk raster-IRQ code grew game.asm
+            // ($6000 segment) past $7800. music.asm still starts at $8000.
 
 temple_interior_start:
-    // --- Interior color palette (dark cave, stone walls, gold floors) ---
-    lda #$00
-    sta $d021               // black background (air/empty space)
-    lda #$09                // %01 pixel-pairs = brown (wall accent)
+    // --- Interior color palette (Dusk Silhouette / Direction B) ---
+    lda #$06
+    sta $d021               // blue night background (matches outdoor sky)
+    lda #$00                // %01 pixel-pairs = black (silhouette)
     sta $d022
-    lda #$07                // %10 pixel-pairs = yellow (floor sheen)
+    lda #$08                // %10 pixel-pairs = orange (wood)
     sta $d023
     // $d018 = $1A already set by charview (screen $0400, charset $2800) — no change needed
 
@@ -149,7 +150,7 @@ ti_clrc_pg3:
     bne ti_clrc_pg3
 
     // --- Ceiling: rows 0 and 1, full 40-column width ---
-    lda #TILE_PILLAR
+    lda #DUSK_BEAM_H                     // Dusk: wooden horizontal ceiling beam
     ldx #$00
 ti_ceil_tiles:
     sta TI_SCR + 0*40,x
@@ -171,12 +172,12 @@ ti_ceil_colors:
     // which is the last raster of char row 14. Row 15 tiles sit directly below.
     ldx #$00
 ti_floor_tiles:
-    lda #TILE_ROAD
+    lda #DUSK_FLOOR_A                    // Dusk: plank floor (rows 15-16)
     sta TI_SCR + 15*40,x
     sta TI_SCR + 16*40,x
-    lda #TILE_GRASS_FILL
+    lda #DUSK_FLOOR_B                    // lower plank course (row 17)
     sta TI_SCR + 17*40,x
-    lda #TILE_PILLAR
+    lda #DUSK_STONE                      // stones below the floor (row 18)
     sta TI_SCR + 18*40,x
     inx
     cpx #TI_COLS
@@ -206,7 +207,7 @@ ti_floor_colors:
     lda #13                 // rows 2..14 inclusive = 13 rows
     sta TI_CTR
 ti_wall_loop:
-    lda #TILE_PILLAR
+    lda #DUSK_BEAM_V                     // Dusk: wooden vertical wall beam
     ldy #0
     sta (TI_PTR_S),y        // left wall col 0
     ldy #39
@@ -238,7 +239,7 @@ ti_wall_c_ok:
     // Rows 7-13 offer interesting variation; all are reachable or near-reachable.
 
     // Platform 1: row 7,  cols  5-14  (10 tiles — high left)
-    lda #TILE_ROAD
+    lda #DUSK_PLANK
     ldx #5
 ti_p1:
     sta TI_SCR + 7*40,x
@@ -254,7 +255,7 @@ ti_p1c:
     bne ti_p1c
 
     // Platform 2: row 9,  cols 22-32  (11 tiles — high right)
-    lda #TILE_ROAD
+    lda #DUSK_PLANK
     ldx #22
 ti_p2:
     sta TI_SCR + 9*40,x
@@ -270,7 +271,7 @@ ti_p2c:
     bne ti_p2c
 
     // Platform 3: row 11, cols  8-18  (11 tiles — center mid)
-    lda #TILE_ROAD
+    lda #DUSK_PLANK
     ldx #8
 ti_p3:
     sta TI_SCR + 11*40,x
@@ -286,7 +287,7 @@ ti_p3c:
     bne ti_p3c
 
     // Platform 4: row 13, cols  2-10   (9 tiles — low left)
-    lda #TILE_ROAD
+    lda #DUSK_PLANK
     ldx #2
 ti_p4:
     sta TI_SCR + 13*40,x
@@ -302,7 +303,7 @@ ti_p4c:
     bne ti_p4c
 
     // Platform 5: row 13, cols 28-36   (9 tiles — low right)
-    lda #TILE_ROAD
+    lda #DUSK_PLANK
     ldx #28
 ti_p5:
     sta TI_SCR + 13*40,x

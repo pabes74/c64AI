@@ -144,6 +144,20 @@
 .const KEY_SPACE_COL_MASK = %01111111 // pull column 7 low to read Space
 .const KEY_SPACE_ROW_BIT  = %00010000 // bit 4 corresponds to Space's row
 
+// Joystick Port 2: read $dc00 directly (no strobing needed), active-low (0 = pressed)
+.const JOY2_UP_BIT    = %00000001   // bit 0: up
+.const JOY2_DOWN_BIT  = %00000010   // bit 1: down
+.const JOY2_LEFT_BIT  = %00000100   // bit 2: left
+.const JOY2_RIGHT_BIT = %00001000   // bit 3: right
+.const JOY2_FIRE_BIT  = %00010000   // bit 4: fire button
+
+// Joystick Port 1: read $dc01 directly (no strobing needed), active-low (0 = pressed)
+.const JOY1_UP_BIT    = %00000001   // bit 0: up
+.const JOY1_DOWN_BIT  = %00000010   // bit 1: down
+.const JOY1_LEFT_BIT  = %00000100   // bit 2: left
+.const JOY1_RIGHT_BIT = %00001000   // bit 3: right
+.const JOY1_FIRE_BIT  = %00010000   // bit 4: fire button
+
 .const BG_SCREEN_BASE    = $0400
 .const BG_COLOR_BASE     = $d800
 .const BG_VISIBLE_COLS   = 40
@@ -171,6 +185,58 @@
 .const TILE_PILLAR           = $19
 .const TILE_DOOR             = $1d   // all-%11 pixels; colour RAM $00 = solid black entrance
 .const TILE_TREE_STUMP       = $1a
+
+// ---- Dusk Silhouette (Direction B) tiles — glyphs at char $30-$63 (see gfx.asm) ----
+.const DUSK_BLANK       = $30
+.const DUSK_SOLID3      = $33   // all-%11 solid (colour-RAM controlled)
+.const DUSK_CANOPY_A    = $34
+.const DUSK_CANOPY_B    = $35
+.const DUSK_CANOPY_C    = $36
+.const DUSK_VINE_A      = $37
+.const DUSK_VINE_B      = $38
+.const DUSK_VINE_END    = $39
+.const DUSK_LEAF_TUFT   = $3a
+.const DUSK_BUSH_TOP_A  = $3b
+.const DUSK_BUSH_TOP_B  = $3c
+.const DUSK_BUSH_FILL_A = $3d
+.const DUSK_BUSH_FILL_B = $3e
+.const DUSK_BUSH_BASE   = $3f
+.const DUSK_TRUNK       = $40
+.const DUSK_TRUNK_SHADE = $41
+.const DUSK_GRASS_TOP   = $42
+.const DUSK_DIRT_A      = $43
+.const DUSK_DIRT_B      = $44
+.const DUSK_DIRT_HOLE   = $45
+.const DUSK_DIRT_DARK   = $46
+.const DUSK_UNDER_A     = $47
+.const DUSK_UNDER_B     = $48
+.const DUSK_CLIFF_R     = $49
+.const DUSK_REEDS       = $4a
+.const DUSK_WATER_A     = $4b
+.const DUSK_WATER_B     = $4c
+.const DUSK_WATER_TOP   = $4d
+.const DUSK_TORII_BEAM  = $4e
+.const DUSK_TORII_BEAM2 = $4f
+.const DUSK_TORII_END_L = $50
+.const DUSK_TORII_END_R = $51
+.const DUSK_TORII_POST  = $52
+.const DUSK_TORII_BASE  = $53
+.const DUSK_BANNER_A    = $54
+.const DUSK_BEAM_H      = $55
+.const DUSK_BEAM_V      = $56
+.const DUSK_PLANK       = $57
+.const DUSK_PLANK_L     = $58
+.const DUSK_PLANK_R     = $59
+.const DUSK_FLOOR_A     = $5a
+.const DUSK_FLOOR_B     = $5b
+.const DUSK_PANEL       = $5c
+.const DUSK_LANTERN_TOP = $5d
+.const DUSK_STONE       = $5e
+.const DUSK_ROPE        = $5f
+.const DUSK_MOON_TL     = $60
+.const DUSK_MOON_TR     = $61
+.const DUSK_MOON_BL     = $62
+.const DUSK_MOON_BR     = $63
 
 .const GAME_CHARSET_VALUE = $1a// screen=$0400, chars=$2800 (see game_bg_charset in gfx.asm)
 
@@ -233,7 +299,7 @@
 
 // ============================================================
 // Lung dragon boss routines — placed at $5200 to keep game
-// segment ($6000+) below temple_interior ($7800).
+// segment ($6000+) below temple_interior ($7880).
 // ============================================================
 * = $5200
 
@@ -951,6 +1017,191 @@ clfh_done_all:
     rts
 
 
+// --- Joystick Port 2 ($dc00) subroutines ---
+// Joystick bits are active-low: 0 = pressed, 1 = not pressed.
+// No column strobing needed — just read $dc00 directly.
+
+joy2_right_pressed:
+    lda $dc00               // read CIA1 Port A (joystick port 2)
+    and #JOY2_RIGHT_BIT     // bit 3: right direction
+    bne joy2_right_no
+    lda #$01
+    rts
+joy2_right_no:
+    lda #$00
+    rts
+
+joy2_left_pressed:
+    lda $dc00               // read CIA1 Port A (joystick port 2)
+    and #JOY2_LEFT_BIT      // bit 2: left direction
+    bne joy2_left_no
+    lda #$01
+    rts
+joy2_left_no:
+    lda #$00
+    rts
+
+joy2_up_pressed:
+    lda $dc00               // read CIA1 Port A (joystick port 2)
+    and #JOY2_UP_BIT        // bit 0: up direction
+    bne joy2_up_no
+    lda #$01
+    rts
+joy2_up_no:
+    lda #$00
+    rts
+
+joy2_down_pressed:
+    lda $dc00               // read CIA1 Port A (joystick port 2)
+    and #JOY2_DOWN_BIT      // bit 1: down direction
+    bne joy2_down_no
+    lda #$01
+    rts
+joy2_down_no:
+    lda #$00
+    rts
+
+joy2_fire_pressed:
+    lda $dc00               // read CIA1 Port A (joystick port 2)
+    and #JOY2_FIRE_BIT      // bit 4: fire button
+    bne joy2_fire_no
+    lda #$01
+    rts
+joy2_fire_no:
+    lda #$00
+    rts
+
+
+// --- Joystick Port 1 ($dc01) subroutines ---
+// Port 1 joystick state is in CIA1 Port B ($dc01).
+// Also active-low, and requires CIA1 Port B direction register to be set to input.
+
+joy1_right_pressed:
+    lda $dc01               // read CIA1 Port B (joystick port 1)
+    and #JOY1_RIGHT_BIT     // bit 3: right direction
+    bne joy1_right_no
+    lda #$01
+    rts
+joy1_right_no:
+    lda #$00
+    rts
+
+joy1_left_pressed:
+    lda $dc01               // read CIA1 Port B (joystick port 1)
+    and #JOY1_LEFT_BIT      // bit 2: left direction
+    bne joy1_left_no
+    lda #$01
+    rts
+joy1_left_no:
+    lda #$00
+    rts
+
+joy1_up_pressed:
+    lda $dc01               // read CIA1 Port B (joystick port 1)
+    and #JOY1_UP_BIT        // bit 0: up direction
+    bne joy1_up_no
+    lda #$01
+    rts
+joy1_up_no:
+    lda #$00
+    rts
+
+joy1_down_pressed:
+    lda $dc01               // read CIA1 Port B (joystick port 1)
+    and #JOY1_DOWN_BIT      // bit 1: down direction
+    bne joy1_down_no
+    lda #$01
+    rts
+joy1_down_no:
+    lda #$00
+    rts
+
+joy1_fire_pressed:
+    lda $dc01               // read CIA1 Port B (joystick port 1)
+    and #JOY1_FIRE_BIT      // bit 4: fire button
+    bne joy1_fire_no
+    lda #$01
+    rts
+joy1_fire_no:
+    lda #$00
+    rts
+
+
+// --- Combined input wrapper routines ---
+// Each routine checks keyboard first, then joystick port 2, then joystick port 1.
+// Returns $01 if any source is active, $00 if none.
+
+input_right:                // D key OR joystick right (port 1 or 2)
+    jsr key_d_pressed
+    bne input_right_yes
+    jsr joy2_right_pressed
+    bne input_right_yes
+    jsr joy1_right_pressed
+    beq input_right_no
+input_right_yes:
+    lda #$01
+    rts
+input_right_no:
+    lda #$00
+    rts
+
+input_left:                 // A key OR joystick left (port 1 or 2)
+    jsr key_a_pressed
+    bne input_left_yes
+    jsr joy2_left_pressed
+    bne input_left_yes
+    jsr joy1_left_pressed
+    beq input_left_no
+input_left_yes:
+    lda #$01
+    rts
+input_left_no:
+    lda #$00
+    rts
+
+input_up:                   // W key OR joystick up (port 1 or 2)
+    jsr key_w_pressed
+    bne input_up_yes
+    jsr joy2_up_pressed
+    bne input_up_yes
+    jsr joy1_up_pressed
+    beq input_up_no
+input_up_yes:
+    lda #$01
+    rts
+input_up_no:
+    lda #$00
+    rts
+
+input_down:                 // S key OR joystick down (port 1 or 2)
+    jsr key_s_pressed
+    bne input_down_yes
+    jsr joy2_down_pressed
+    bne input_down_yes
+    jsr joy1_down_pressed
+    beq input_down_no
+input_down_yes:
+    lda #$01
+    rts
+input_down_no:
+    lda #$00
+    rts
+
+input_fire:                 // Space key OR joystick fire (port 1 or 2)
+    jsr key_space_pressed
+    bne input_fire_yes
+    jsr joy2_fire_pressed
+    bne input_fire_yes
+    jsr joy1_fire_pressed
+    beq input_fire_no
+input_fire_yes:
+    lda #$01
+    rts
+input_fire_no:
+    lda #$00
+    rts
+
+
 // Entry point for game
 * = $6000
 game_start:
@@ -1016,20 +1267,21 @@ game_start:
     // current_level is NOT reset here — it is set to 1 at start (main.asm)
     // and incremented when the hero exits the temple (ti_show_level2)
 
-    // Set background and border color based on current level
+    // Set background color based on current level; border is black (Dusk).
+    lda #$00                       // Dusk: black border
+    sta $d020
     ldx current_level
     dex                            // convert 1-based level to 0-based index
-    lda bg_color_by_level,x
-    sta $d020
+    lda bg_color_by_level,x        // Dusk: blue night sky ($06)
     sta $d021
 
     // Enable multicolor character mode
     lda $d016
     ora #%00010000
     sta $d016
-    lda #$08          // orange for %01 bit pairs (road spots)
+    lda #$00          // Dusk: %01 bit pairs = black silhouette
     sta $d022
-    lda #$0d          // light green for %10 bit pairs
+    lda #$08          // Dusk: %10 bit pairs = orange (earth/wood)
     sta $d023
 
     lda #$01
@@ -1079,13 +1331,13 @@ game_start:
     jsr init_projectiles
 
 game_main_loop:
-    jsr update_projectiles
     jsr check_collisions
-    jsr update_pose_state
+    jsr update_pose_state        // raster stall (wait_frame_safe_window) happens here on jump steps
+    jsr update_projectiles       // called AFTER stall so $a2 has advanced — projectiles keep full speed
+    jsr update_lung_fireballs    // same: moved into tight loop so fireballs move during all poses
     bne game_main_loop
     jsr update_kuro
     jsr update_lung
-    jsr update_lung_fireballs
 
     // --- Check door entry: player walks into open temple entrance ---
     lda door_open
@@ -1103,7 +1355,7 @@ ti_door_skip:
     bne arena_input
 
     // --- Normal scrolling mode ---
-    jsr key_d_pressed
+    jsr input_right
     beq check_a_input
 
     // block scrolling right if temple is centered
@@ -1134,7 +1386,7 @@ lock_scroll_now:
     jmp game_main_loop
 
 check_a_input:
-    jsr key_a_pressed
+    jsr input_left
     bne check_a_do
     jmp no_input
 check_a_do:
@@ -1150,7 +1402,7 @@ check_a_move:
 
     // --- Arena mode: move sprite horizontally ---
 arena_input:
-    jsr key_d_pressed
+    jsr input_right
     beq arena_to_check_a
 
     jsr movement_tick_ready
@@ -1204,7 +1456,7 @@ arena_to_main:
     jmp game_main_loop
 
 arena_check_a:
-    jsr key_a_pressed
+    jsr input_left
     beq no_input
 
     jsr movement_tick_ready
@@ -1959,7 +2211,7 @@ pose_finish_reset:
     rts
 
 pose_check_input:
-    jsr key_space_pressed
+    jsr input_fire
     beq pose_check_kneel
 
     jsr start_kick
@@ -1967,7 +2219,7 @@ pose_check_input:
     rts
 
 pose_check_kneel:
-    jsr key_w_pressed
+    jsr input_up
     beq pose_check_jump
 
     // 1-second cooldown: block re-jump for JUMP_COOLDOWN_TICKS jiffies after landing
@@ -1986,7 +2238,7 @@ pose_do_jump:
     rts
 
 pose_check_jump:
-    jsr key_s_pressed
+    jsr input_down
     beq pose_idle
 
     jsr start_kneel
@@ -2520,7 +2772,11 @@ collision_loop:
     jmp collision_next
 
 collision_boulder_hit:
+    txa                         // save slot index — draw_hud_life (inside start_hit) corrupts X
+    pha
     jsr start_hit
+    pla                         // restore slot index
+    tax
     lda #PROJ_INACTIVE
     sta proj_state,x
     jsr disable_proj_sprite
@@ -2532,7 +2788,11 @@ collision_knife:
     cmp #POSE_MODE_KNEEL
     beq collision_next          // knife flies past
 
+    txa                         // save slot index — draw_hud_life (inside start_hit) corrupts X
+    pha
     jsr start_hit
+    pla                         // restore slot index
+    tax
     lda #PROJ_INACTIVE
     sta proj_state,x
     jsr disable_proj_sprite
@@ -3618,12 +3878,13 @@ door_open:
 current_level:
     .byte 1                        // 1-based level counter; shown in HUD centre
 
-// background/border color per level — indexed by current_level (1-based → subtract 1)
+// background (sky) color per level — indexed by current_level (1-based → subtract 1)
+// Dusk Silhouette: blue night sky ($06) for every level.
 bg_color_by_level:
-    .byte GAME_BG_COLOR_L1         // level 1: cyan    ($03)
-    .byte GAME_BG_COLOR_L2         // level 2: light blue ($0e)
-    .byte GAME_BG_COLOR_L3         // level 3: blue    ($06)
-    .byte GAME_BG_COLOR_L4         // level 4: black   ($00)
+    .byte $06                      // level 1: Dusk blue
+    .byte $06                      // level 2: Dusk blue
+    .byte $06                      // level 3: Dusk blue
+    .byte $06                      // level 4: Dusk blue
 
 kuro_anim_ptrs_left:
     .byte KURO_L0_PTR, KURO_L1_PTR, KURO_L2_PTR
@@ -3652,12 +3913,15 @@ boss_hud_text:  // "KURO" in game charset screen codes ($10=K, $1b=U, $12=R, $1c
 
 // --- Background data -------------------------------------------------------
 
+// Per-row colour-RAM value (applies to %11 pixels in each row). Multicolor cells
+// need bit 3 set ($08|colour). Dusk Silhouette: moon yellow ($0f), bush/grass/dirt
+// green ($0d), under-earth purple ($0c).
 bg_row_color:
-    .byte $0b, $0b, $0b, $0b, $0b
-    .byte $0b, $0d, $0d, $08, $08
-    .byte $0f, $0f, $0f, $0f, $0f
-    .byte $0f, $0d, $0d, $0d, $0d
-    .byte $0d, $0d, $0d, $0d, $0d
+    .byte $0f, $0f, $0f, $0f, $0f   // rows 0-4  : sky (n/a) + moon (yellow)
+    .byte $0f, $0f, $0d, $0d, $0d   // rows 5-9  : sky, then bush band (green)
+    .byte $0d, $0d, $0d, $0d, $0d   // rows 10-14: bush base, grass fringe, dirt (green)
+    .byte $0d, $0d, $0d, $0c, $0c   // rows 15-19: dirt (green flecks), under-earth (purple)
+    .byte $0c, $0c, $0c, $0c, $0d   // rows 20-24: under-earth (purple), row 24 HUD (unused)
 
 bg_row_tile_ptr_lo:
     .byte <bg_row00_tiles, <bg_row01_tiles, <bg_row02_tiles, <bg_row03_tiles, <bg_row04_tiles
@@ -3705,46 +3969,57 @@ temple_tile_color_ptr_hi:
     .byte >temple_row0_colors, >temple_row1_colors, >temple_row2_colors
     .byte >temple_row3_colors, >temple_row4_colors, >temple_row5_colors
 
+// Temple exterior facade — Dusk Silhouette torii gate (20 cols x 6 rows).
+// Same cell layout as before so open_temple_door still patches the door at
+// rows 3-5 cols 8-11. Red beams ($0a=%11 red), white posts ($09=%11 white).
 temple_row0_tiles:
-    .byte TILE_SKY,TILE_SKY,TILE_ROOF_EDGE_L,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROOF_EDGE_R,TILE_SKY,TILE_SKY
+    .byte TILE_SKY,TILE_SKY,DUSK_TORII_END_L,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM
+    .byte DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_BEAM,DUSK_TORII_END_R,TILE_SKY,TILE_SKY
 temple_row1_tiles:
-    .byte TILE_SKY,TILE_SKY,TILE_SKY,TILE_ROOF_EDGE_L,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROOF_EDGE_R,TILE_SKY,TILE_SKY,TILE_SKY
+    .byte TILE_SKY,TILE_SKY,TILE_SKY,DUSK_TORII_END_L,DUSK_TORII_BEAM2,DUSK_TORII_BEAM2,DUSK_TORII_BEAM2,DUSK_TORII_BEAM2,DUSK_TORII_BEAM2,DUSK_TORII_BEAM2
+    .byte DUSK_TORII_BEAM2,DUSK_TORII_BEAM2,DUSK_TORII_BEAM2,DUSK_TORII_BEAM2,DUSK_TORII_BEAM2,DUSK_TORII_BEAM2,DUSK_TORII_END_R,TILE_SKY,TILE_SKY,TILE_SKY
 temple_row2_tiles:
-    .byte TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_PILLAR,TILE_PILLAR
-    .byte TILE_PILLAR,TILE_PILLAR,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY
+    .byte TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY,DUSK_TORII_POST,DUSK_BEAM_H,DUSK_BEAM_H
+    .byte DUSK_BEAM_H,DUSK_BEAM_H,DUSK_BEAM_H,TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY
 temple_row3_tiles:
-    .byte TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY
-    .byte TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY
+    .byte TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY
+    .byte TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY
 temple_row4_tiles:
-    .byte TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY
-    .byte TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY
+    .byte TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY
+    .byte TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY,DUSK_TORII_POST,TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY
 temple_row5_tiles:
-    .byte TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY
-    .byte TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_PILLAR,TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY
+    .byte TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY,DUSK_TORII_BASE,TILE_SKY,TILE_SKY,DUSK_TORII_BASE,TILE_SKY,TILE_SKY
+    .byte TILE_SKY,TILE_SKY,DUSK_TORII_BASE,TILE_SKY,TILE_SKY,DUSK_TORII_BASE,TILE_SKY,TILE_SKY,TILE_SKY,TILE_SKY
 
 temple_row0_colors:
-    .byte $0b,$0b,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0b,$0b
+    .byte $0f,$0f,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0f,$0f
 temple_row1_colors:
-    .byte $0b,$0b,$0b,$0a,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$0a,$0b,$0b,$0b
+    .byte $0f,$0f,$0f,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0a,$0f,$0f,$0f
 temple_row2_colors:
-    .byte $0b,$0b,$0b,$0b,$09,$0b,$0b,$09,$0f,$0f,$0e,$0e,$0f,$0b,$0b,$09,$0b,$0b,$0b,$0b
+    .byte $0f,$0f,$0f,$0f,$09,$0f,$0f,$09,$0a,$0a,$0a,$0a,$0a,$0f,$0f,$09,$0f,$0f,$0f,$0f
 temple_row3_colors:
-    .byte $0b,$0b,$0b,$0b,$09,$0b,$0b,$09,$0b,$0b,$0b,$0b,$09,$0b,$0b,$09,$0b,$0b,$0b,$0b
+    .byte $0f,$0f,$0f,$0f,$09,$0f,$0f,$09,$0f,$0f,$0f,$0f,$09,$0f,$0f,$09,$0f,$0f,$0f,$0f
 temple_row4_colors:
-    .byte $0b,$0b,$0b,$0b,$09,$0b,$0b,$09,$0b,$0b,$0b,$0b,$09,$0b,$0b,$09,$0b,$0b,$0b,$0b
+    .byte $0f,$0f,$0f,$0f,$09,$0f,$0f,$09,$0f,$0f,$0f,$0f,$09,$0f,$0f,$09,$0f,$0f,$0f,$0f
 temple_row5_colors:
-    .byte $0b,$0b,$0b,$0b,$08,$0b,$0b,$08,$0b,$0b,$0b,$0b,$08,$0b,$0b,$08,$0b,$0b,$0b,$0b
+    .byte $0f,$0f,$0f,$0f,$08,$0f,$0f,$08,$0f,$0f,$0f,$0f,$08,$0f,$0f,$08,$0f,$0f,$0f,$0f
 
 
+// ---- Dusk Silhouette scrolling world (64 cols x 25 rows) --------------------
+// Bands: sky+moon (0-6), silhouette bush band + trunks (7-11), grass fringe (12),
+// dirt/path where the player walks (13-17), dark under-earth (18-23). Row 24 is
+// the HUD (not drawn by draw_background_window). Colours come from bg_row_color.
 bg_tile_map:
 bg_row00_tiles:
     .fill BG_WIDTH, TILE_SKY
-bg_row01_tiles:
-    .fill BG_WIDTH, TILE_SKY
-bg_row02_tiles:
-    .fill BG_WIDTH, TILE_SKY
+bg_row01_tiles:                              // moon top row (2x2 at cols 30-31)
+    .fill 30, TILE_SKY
+    .byte DUSK_MOON_TL, DUSK_MOON_TR
+    .fill 32, TILE_SKY
+bg_row02_tiles:                              // moon bottom row
+    .fill 30, TILE_SKY
+    .byte DUSK_MOON_BL, DUSK_MOON_BR
+    .fill 32, TILE_SKY
 bg_row03_tiles:
     .fill BG_WIDTH, TILE_SKY
 bg_row04_tiles:
@@ -3752,96 +4027,40 @@ bg_row04_tiles:
 bg_row05_tiles:
     .fill BG_WIDTH, TILE_SKY
 bg_row06_tiles:
-    .byte TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY
-bg_row07_tiles:
-    .byte TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_SKY, TILE_TREE_TOP_L, TILE_TREE_FILL, TILE_TREE_TOP_R, TILE_SKY, TILE_SKY
-bg_row08_tiles:
-    .byte TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_TREE_STUMP, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY, TILE_TREE_STUMP, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_TREE_STUMP, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY, TILE_TREE_STUMP, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_TREE_STUMP, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY, TILE_TREE_STUMP, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_TREE_STUMP, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY, TILE_TREE_STUMP, TILE_SKY, TILE_SKY
-bg_row09_tiles:
-    .byte TILE_SKY, TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_TREE_STUMP, TILE_NEAR_HILL_PEAK, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_TREE_STUMP, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_TREE_STUMP, TILE_NEAR_HILL_PEAK, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_TREE_STUMP, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_TREE_STUMP, TILE_NEAR_HILL_PEAK, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_TREE_STUMP, TILE_SKY, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_TREE_STUMP, TILE_NEAR_HILL_PEAK, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_SKY
-    .byte TILE_SKY, TILE_SKY, TILE_NEAR_HILL_LEFT, TILE_NEAR_HILL_FILL, TILE_NEAR_HILL_RIGHT, TILE_TREE_STUMP, TILE_SKY, TILE_SKY
-bg_row10_tiles:
-    .fill BG_WIDTH, TILE_FIELD
-bg_row11_tiles:
-    .fill BG_WIDTH, TILE_FIELD
-bg_row12_tiles:
-    .fill BG_WIDTH, TILE_FIELD
-bg_row13_tiles:
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-bg_row14_tiles:
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
+    .fill BG_WIDTH, TILE_SKY
+bg_row07_tiles:                              // bush tops
+    .for (var i=0; i<32; i++) { .byte DUSK_BUSH_TOP_A, DUSK_BUSH_TOP_B }
+bg_row08_tiles:                              // bush fill + trunks every 8 cols
+    .for (var i=0; i<8; i++) { .byte DUSK_TRUNK, DUSK_BUSH_FILL_A, DUSK_BUSH_FILL_B, DUSK_BUSH_FILL_A, DUSK_BUSH_FILL_B, DUSK_BUSH_FILL_A, DUSK_BUSH_FILL_B, DUSK_BUSH_FILL_A }
+bg_row09_tiles:                              // bush fill + trunk shade
+    .for (var i=0; i<8; i++) { .byte DUSK_TRUNK_SHADE, DUSK_BUSH_FILL_B, DUSK_BUSH_FILL_A, DUSK_BUSH_FILL_B, DUSK_BUSH_FILL_A, DUSK_BUSH_FILL_B, DUSK_BUSH_FILL_A, DUSK_BUSH_FILL_B }
+bg_row10_tiles:                              // dense bush fill
+    .for (var i=0; i<32; i++) { .byte DUSK_BUSH_FILL_A, DUSK_BUSH_FILL_B }
+bg_row11_tiles:                              // bush base + trunk bottoms
+    .for (var i=0; i<8; i++) { .byte DUSK_TRUNK, DUSK_BUSH_BASE, DUSK_BUSH_BASE, DUSK_BUSH_BASE, DUSK_BUSH_BASE, DUSK_BUSH_BASE, DUSK_BUSH_BASE, DUSK_BUSH_BASE }
+bg_row12_tiles:                              // grass fringe
+    .fill BG_WIDTH, DUSK_GRASS_TOP
+bg_row13_tiles:                              // dirt surface (player walks rows 13-17)
+    .for (var i=0; i<32; i++) { .byte DUSK_DIRT_A, DUSK_DIRT_B }
+bg_row14_tiles:                              // dirt with occasional holes
+    .for (var i=0; i<8; i++) { .byte DUSK_DIRT_A, DUSK_DIRT_B, DUSK_DIRT_A, DUSK_DIRT_HOLE, DUSK_DIRT_B, DUSK_DIRT_A, DUSK_DIRT_B, DUSK_DIRT_A }
 bg_row15_tiles:
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
-    .byte TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2,TILE_ROAD,TILE_ROAD,TILE_ROAD,TILE_ROAD2
+    .for (var i=0; i<32; i++) { .byte DUSK_DIRT_B, DUSK_DIRT_A }
 bg_row16_tiles:
-    .byte TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B
-    .byte TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B
-    .byte TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B
-    .byte TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B
-    .byte TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B
-    .byte TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B
-    .byte TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B
-    .byte TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B, TILE_GRASS_TOP_A, TILE_GRASS_TOP_B
+    .for (var i=0; i<32; i++) { .byte DUSK_DIRT_A, DUSK_DIRT_B }
 bg_row17_tiles:
-    .fill BG_WIDTH, TILE_GRASS_FILL
-bg_row18_tiles:
-    .fill BG_WIDTH, TILE_GRASS_FILL
+    .for (var i=0; i<32; i++) { .byte DUSK_DIRT_B, DUSK_DIRT_A }
+bg_row18_tiles:                              // dark under-earth (solid, coloured purple)
+    .fill BG_WIDTH, DUSK_SOLID3
 bg_row19_tiles:
-    .fill BG_WIDTH, TILE_GRASS_FILL
+    .fill BG_WIDTH, DUSK_SOLID3
 bg_row20_tiles:
-    .fill BG_WIDTH, TILE_GRASS_FILL
+    .fill BG_WIDTH, DUSK_SOLID3
 bg_row21_tiles:
-    .fill BG_WIDTH, TILE_GRASS_FILL
+    .fill BG_WIDTH, DUSK_SOLID3
 bg_row22_tiles:
-    .fill BG_WIDTH, TILE_GRASS_FILL
+    .fill BG_WIDTH, DUSK_SOLID3
 bg_row23_tiles:
-    .fill BG_WIDTH, TILE_GRASS_FILL
-bg_row24_tiles:
-    .fill BG_WIDTH, TILE_GRASS_FILL
+    .fill BG_WIDTH, DUSK_SOLID3
+bg_row24_tiles:                              // HUD row (unused by renderer)
+    .fill BG_WIDTH, TILE_SKY

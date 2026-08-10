@@ -127,6 +127,66 @@ game_bg_charset:
 // digit 9 (screen code $2c)
     .byte $3c,$66,$66,$3e,$06,$66,$3c,$00
 
+// ---- Dusk Silhouette (Direction B) background glyphs ----
+// Copied verbatim from handover/charset.asm ch_blank..ch_moon_br ($00-$33),
+// relocated to game char indices $30-$63. Same multicolor bitpair convention:
+// %00=$d021 (blue sky), %01=$d022 (black silhouette), %10=$d023 (orange), %11=colour RAM.
+// 3 filler chars ($2d-$2f) keep the block aligned to char index $30.
+    .fill 3*8, $00                       // chars $2d,$2e,$2f (unused padding)
+dusk_glyphs:                             // char index $30
+    .byte $00,$00,$00,$00,$00,$00,$00,$00 // $30 dg_blank
+    .byte $55,$55,$55,$55,$55,$55,$55,$55 // $31 dg_solid1
+    .byte $AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA // $32 dg_solid2
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF // $33 dg_solid3
+    .byte $77,$DD,$7D,$D7,$75,$1D,$C7,$41 // $34 dg_canopy_a
+    .byte $DD,$77,$D7,$7D,$5C,$D4,$70,$30 // $35 dg_canopy_b
+    .byte $5F,$F5,$77,$DD,$37,$1D,$0D,$04 // $36 dg_canopy_c
+    .byte $10,$34,$1C,$04,$34,$10,$1C,$04 // $37 dg_vine_a
+    .byte $04,$1C,$34,$10,$0C,$04,$34,$10 // $38 dg_vine_b
+    .byte $10,$34,$1C,$14,$04,$34,$0C,$00 // $39 dg_vine_end
+    .byte $00,$14,$7D,$77,$DD,$14,$04,$00 // $3A dg_leaf_tuft
+    .byte $00,$14,$7D,$D7,$7D,$D7,$77,$DD // $3B dg_bush_top_a
+    .byte $04,$1D,$77,$DD,$77,$DD,$7D,$D7 // $3C dg_bush_top_b
+    .byte $77,$DD,$7D,$D7,$77,$DD,$7D,$D7 // $3D dg_bush_fill_a
+    .byte $DD,$77,$D7,$7D,$DD,$77,$D7,$7D // $3E dg_bush_fill_b
+    .byte $77,$DD,$1D,$C7,$0D,$01,$00,$00 // $3F dg_bush_base
+    .byte $28,$28,$28,$28,$28,$28,$28,$28 // $40 dg_trunk
+    .byte $2C,$2C,$2C,$2C,$2C,$2C,$2C,$2C // $41 dg_trunk_shade
+    .byte $44,$1D,$77,$DD,$77,$FF,$FF,$FF // $42 dg_grass_top
+    .byte $AA,$BA,$AB,$EA,$AE,$AA,$BA,$AB // $43 dg_dirt_a
+    .byte $AE,$AA,$EA,$AB,$AA,$BA,$AA,$AE // $44 dg_dirt_b
+    .byte $AA,$8A,$A2,$AA,$2A,$A2,$AA,$8A // $45 dg_dirt_hole
+    .byte $88,$22,$88,$22,$88,$22,$88,$22 // $46 dg_dirt_dark
+    .byte $00,$20,$00,$02,$00,$80,$00,$08 // $47 dg_under_a
+    .byte $00,$02,$00,$20,$00,$08,$00,$80 // $48 dg_under_b
+    .byte $A8,$AA,$A8,$A0,$A8,$AA,$A0,$A8 // $49 dg_cliff_r
+    .byte $00,$13,$D1,$77,$DD,$77,$DD,$77 // $4A dg_reeds
+    .byte $FF,$FF,$33,$FF,$FF,$CC,$FF,$FF // $4B dg_water_a
+    .byte $FF,$CF,$FF,$F3,$FF,$FF,$3F,$FF // $4C dg_water_b
+    .byte $44,$FF,$FF,$CF,$FF,$F3,$FF,$FF // $4D dg_water_top
+    .byte $FF,$FF,$FF,$00,$00,$00,$00,$00 // $4E dg_torii_beam
+    .byte $00,$FF,$FF,$00,$00,$00,$00,$00 // $4F dg_torii_beam2
+    .byte $0F,$3F,$FF,$00,$00,$00,$00,$00 // $50 dg_torii_end_l
+    .byte $F0,$FC,$FF,$00,$00,$00,$00,$00 // $51 dg_torii_end_r
+    .byte $3C,$3C,$3C,$3C,$3C,$3C,$3C,$3C // $52 dg_torii_post
+    .byte $14,$14,$55,$00,$00,$00,$00,$00 // $53 dg_torii_base
+    .byte $3C,$3C,$3C,$3C,$30,$0C,$00,$00 // $54 dg_banner_a
+    .byte $AA,$AA,$EE,$AA,$00,$00,$00,$00 // $55 dg_beam_h
+    .byte $2E,$2E,$2E,$2E,$2E,$2E,$2E,$2E // $56 dg_beam_v
+    .byte $FF,$AA,$AE,$AA,$BA,$AA,$00,$00 // $57 dg_plank
+    .byte $3F,$2A,$2B,$2A,$2E,$2A,$00,$00 // $58 dg_plank_l
+    .byte $FC,$A8,$B8,$A8,$AC,$A8,$00,$00 // $59 dg_plank_r
+    .byte $FF,$AA,$AE,$AB,$AA,$BA,$AA,$AB // $5A dg_floor_a
+    .byte $AA,$AE,$AA,$AB,$AA,$AE,$AA,$BA // $5B dg_floor_b
+    .byte $FF,$C3,$C3,$FF,$C3,$C3,$FF,$00 // $5C dg_panel
+    .byte $04,$04,$3F,$FF,$FF,$FF,$3F,$0C // $5D dg_lantern_top
+    .byte $00,$28,$AA,$28,$00,$00,$00,$00 // $5E dg_stone
+    .byte $04,$04,$04,$04,$04,$04,$04,$04 // $5F dg_rope
+    .byte $0F,$3F,$FF,$FF,$FF,$FF,$FF,$FF // $60 dg_moon_tl
+    .byte $F0,$FC,$FF,$FF,$FF,$FF,$FF,$FF // $61 dg_moon_tr
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$3F,$0F // $62 dg_moon_bl
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FC,$F0 // $63 dg_moon_br
+
 game_bg_charset_end:
     .fill 256*8 - (game_bg_charset_end - game_bg_charset), $00
 

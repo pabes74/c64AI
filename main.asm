@@ -41,15 +41,18 @@ BasicUpstart2(start)
 // Entry point
 * = $4000
 start:
+    // Reset VIC to text mode (loading screen leaves bitmap mode on)
+    lda #$1b
+    sta $d011                   // $d011: text mode, screen on, 25 rows
+    lda #$c8
+    sta $d016                   // $d016: 40 cols, multicolor off
+    lda #$17
+    sta $dd00                   // $dd00: VIC bank 0 ($0000-$3FFF), serial bus default
+
     // Make screen black and text white
     lda #$00
     sta $d020
     sta $d021
-
-    // Ensure multicolor character mode is off for title screen
-    lda $d016
-    and #%11101111
-    sta $d016
 
     lda #$01
     sta $0286

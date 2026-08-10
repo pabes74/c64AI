@@ -15,7 +15,7 @@ Output: `bin/main.prg`, `bin/main.vs` (VICE symbol file), `buildlog.txt`.
 **VS Code task:** `Build kickass main.asm` (wraps the command above).  
 **Debug:** F5 in VS Code launches VICE with the KickAssembler extension (`launch.json`).
 
-There are no unit tests. Validation means loading `bin/main.prg` (or `d64/c64stuff.d64`) into VICE and running it.
+There are no unit tests. Validation means loading `bin/main.prg` (or `d64/aifist.d64`) into VICE and running it.
 
 ---
 

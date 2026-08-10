@@ -1,8 +1,8 @@
 #!/bin/bash
-# Build the "Artificial Fist" C64 game and pack it into bin/c64stuff.d64.
+# Build the "Artificial Fist" C64 game and pack it into bin/aifist.d64.
 #
 #   ./build.sh          # compile main.asm + loader.asm, pack the .d64
-#   ./run.sh            # boot the freshly built bin/c64stuff.d64 in VICE
+#   ./run.sh            # boot the freshly built bin/aifist.d64 in VICE
 #
 # run.sh does NOT compile — it only boots the disk image this script produces,
 # so you must re-run build.sh after changing any source.
@@ -13,7 +13,7 @@ cd "$SCRIPT_DIR"
 KICKASS="/home/pabes/Projects/kickassembler/KickAss.jar"
 BIN="$SCRIPT_DIR/bin"
 LOG="$SCRIPT_DIR/buildlog.txt"
-D64="$BIN/c64stuff.d64"
+D64="$BIN/aifist.d64"
 
 # --- Prerequisite: a Java runtime (KickAssembler is a .jar) ------------------
 ensure_java() {

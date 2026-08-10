@@ -38,4 +38,4 @@ fi
   -moncommands "$SCRIPT_DIR/bin/main.vs" \
   -virtualdev8 \
   +drive8truedrive \
-  -autostart "$SCRIPT_DIR/bin/c64stuff.d64:loader"
+  -autostart "$SCRIPT_DIR/bin/aifist.d64:loader"

@@ -1,0 +1,855 @@
+// Shared graphics assets for main.asm and game.asm
+.const GAME_BG_CHARSET_BASE = $2800
+
+* = $2000
+LogoChars:
+    .import binary "png/Logo - Chars.bin"
+
+* = GAME_BG_CHARSET_BASE
+// Gameplay background tileset (256 chars @ $2800)
+game_bg_charset:
+// Multicolor character mode tileset (2 bits per pixel)
+// %00 = $d021 (background/sky), %01 = $d022 (dark blue), %10 = $d023 (green), %11 = colour RAM
+
+// tile 0: sky/empty (all background)
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+
+// tile 1: distant hill bump (%11 body, uses colour RAM = light blue per bg_row_color)
+    .byte $00,$00,$3c,$ff,$ff,$ff,$ff,$ff
+
+// tile 2: near hill left slope (%10 green, widening down)
+    .byte $00,$80,$80,$a0,$a0,$a8,$aa,$aa
+
+// tile 3: near hill peak (%11 highlight tip, %10 green body)
+    .byte $00,$3c,$aa,$aa,$aa,$aa,$aa,$aa
+
+// tile 4: near hill right slope (%10 green, widening down)
+    .byte $00,$02,$02,$0a,$0a,$2a,$aa,$aa
+
+// tile 5: near hill fill (%10 solid green)
+    .byte $00,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+
+// tile 6: field/ground fill (%10 green with %11 flower specks)
+    .byte $00,$aa,$aa,$ea,$aa,$aa,$ab,$aa
+
+// tile 7: road (%11=yellow via colour RAM $0f, %01=brown spots via $d022)
+    .byte $ff,$ff,$df,$ff,$7f,$ff,$f7,$ff
+
+// tile 8: grass top variant A (%10 green blade)
+    .byte $20,$20,$a8,$aa,$aa,$aa,$aa,$aa
+
+// tile 9: grass top variant B (%10 green blade)
+    .byte $08,$08,$2a,$aa,$aa,$aa,$aa,$aa
+
+// tile 10: grass fill (solid %10 green)
+    .byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+
+// tile 11: temple roof edge left (%11 diagonal)
+    .byte $00,$c0,$f0,$fc,$ff,$ff,$ff,$ff
+
+// tile 12: temple roof edge right (%11 diagonal)
+    .byte $00,$03,$0f,$3f,$ff,$ff,$ff,$ff
+
+// tile 13: tree top left  (%00=transparent, %10=light green, %11=green)
+    .byte $0b,$2f,$3f,$3f,$bf,$bf,$bf,$3f
+
+// tile 14: tree top right (%00=transparent, %10=light green, %11=green)
+    .byte $c8,$f8,$fc,$fc,$fe,$fe,$fe,$ff
+
+// tile 15: road variant B (%11=yellow, %01=orange spots at rows 0/3/5, cols 3/1/0)
+    .byte $fd,$ff,$ff,$df,$ff,$7f,$ff,$ff
+
+// HUD characters (hi-res mode via color RAM bit3=0)
+// K (screen code $10)
+    .byte $c6,$cc,$d8,$f0,$d8,$cc,$c6,$00
+// A (screen code $11)
+    .byte $3c,$66,$66,$7e,$66,$66,$66,$00
+// R (screen code $12)
+    .byte $7c,$66,$66,$7c,$78,$6c,$66,$00
+// T (screen code $13)
+    .byte $7e,$5a,$18,$18,$18,$18,$3c,$00
+// E (screen code $14)
+    .byte $7e,$60,$60,$78,$60,$60,$7e,$00
+// G (screen code $15)
+    .byte $3c,$66,$60,$6e,$66,$66,$3c,$00
+// I (screen code $16)
+    .byte $3c,$18,$18,$18,$18,$18,$3c,$00
+// full life heart (screen code $17)
+    .byte $66,$ff,$ff,$7e,$3c,$18,$00,$00
+// empty life heart (screen code $18)
+    .byte $66,$99,$81,$42,$24,$18,$00,$00
+
+// tile 25: pillar (%11=solid, %01=orange accent on right edge)
+    .byte $fd,$fd,$fd,$fd,$fd,$fd,$fd,$fd
+
+// tile 26: tree stump (%11=colour RAM, %10=light green, %01=%01=orange)
+    .byte $e5,$e5,$e5,$e5,$e5,$e5,$e5,$e5
+
+// U (screen code $1b)
+    .byte $66,$66,$66,$66,$66,$66,$3c,$00
+// O (screen code $1c)
+    .byte $3c,$66,$66,$66,$66,$66,$3c,$00
+
+// tile 29 ($1d): tree fill — solid green (%11 in every pixel)
+    .byte $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+
+// N (screen code $1e) — used in "LUNG" boss HUD
+    .byte $c6,$c6,$e6,$f6,$de,$ce,$c6,$00
+
+// tile 31 ($1f): placeholder (unused — keeps slot alignment)
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+
+// HUD level display characters (hi-res, color RAM bit3=0)
+// L (screen code $20)
+    .byte $60,$60,$60,$60,$60,$60,$7e,$00
+// V (screen code $21)
+    .byte $66,$66,$66,$66,$3c,$3c,$18,$00
+// colon (screen code $22)
+    .byte $00,$18,$18,$00,$18,$18,$00,$00
+// digit 0 (screen code $23)
+    .byte $3c,$66,$6e,$76,$66,$66,$3c,$00
+// digit 1 (screen code $24)
+    .byte $18,$38,$18,$18,$18,$18,$3c,$00
+// digit 2 (screen code $25)
+    .byte $3c,$66,$06,$0c,$30,$60,$7e,$00
+// digit 3 (screen code $26)
+    .byte $3c,$66,$06,$1c,$06,$66,$3c,$00
+// digit 4 (screen code $27)
+    .byte $0c,$1c,$3c,$6c,$7e,$0c,$0c,$00
+// digit 5 (screen code $28)
+    .byte $7e,$60,$7c,$06,$06,$66,$3c,$00
+// digit 6 (screen code $29)
+    .byte $3c,$66,$60,$7c,$66,$66,$3c,$00
+// digit 7 (screen code $2a)
+    .byte $7e,$06,$0c,$18,$30,$30,$30,$00
+// digit 8 (screen code $2b)
+    .byte $3c,$66,$66,$3c,$66,$66,$3c,$00
+// digit 9 (screen code $2c)
+    .byte $3c,$66,$66,$3e,$06,$66,$3c,$00
+
+// ---- Dusk Silhouette (Direction B) background glyphs ----
+// Copied verbatim from handover/charset.asm ch_blank..ch_moon_br ($00-$33),
+// relocated to game char indices $30-$63. Same multicolor bitpair convention:
+// %00=$d021 (blue sky), %01=$d022 (black silhouette), %10=$d023 (orange), %11=colour RAM.
+// 3 filler chars ($2d-$2f) keep the block aligned to char index $30.
+    .fill 3*8, $00                       // chars $2d,$2e,$2f (unused padding)
+dusk_glyphs:                             // char index $30
+    .byte $00,$00,$00,$00,$00,$00,$00,$00 // $30 dg_blank
+    .byte $55,$55,$55,$55,$55,$55,$55,$55 // $31 dg_solid1
+    .byte $AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA // $32 dg_solid2
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF // $33 dg_solid3
+    .byte $77,$DD,$7D,$D7,$75,$1D,$C7,$41 // $34 dg_canopy_a
+    .byte $DD,$77,$D7,$7D,$5C,$D4,$70,$30 // $35 dg_canopy_b
+    .byte $5F,$F5,$77,$DD,$37,$1D,$0D,$04 // $36 dg_canopy_c
+    .byte $10,$34,$1C,$04,$34,$10,$1C,$04 // $37 dg_vine_a
+    .byte $04,$1C,$34,$10,$0C,$04,$34,$10 // $38 dg_vine_b
+    .byte $10,$34,$1C,$14,$04,$34,$0C,$00 // $39 dg_vine_end
+    .byte $00,$14,$7D,$77,$DD,$14,$04,$00 // $3A dg_leaf_tuft
+    .byte $00,$14,$7D,$D7,$7D,$D7,$77,$DD // $3B dg_bush_top_a
+    .byte $04,$1D,$77,$DD,$77,$DD,$7D,$D7 // $3C dg_bush_top_b
+    .byte $77,$DD,$7D,$D7,$77,$DD,$7D,$D7 // $3D dg_bush_fill_a
+    .byte $DD,$77,$D7,$7D,$DD,$77,$D7,$7D // $3E dg_bush_fill_b
+    .byte $77,$DD,$1D,$C7,$0D,$01,$00,$00 // $3F dg_bush_base
+    .byte $28,$28,$28,$28,$28,$28,$28,$28 // $40 dg_trunk
+    .byte $2C,$2C,$2C,$2C,$2C,$2C,$2C,$2C // $41 dg_trunk_shade
+    .byte $44,$1D,$77,$DD,$77,$FF,$FF,$FF // $42 dg_grass_top
+    .byte $AA,$BA,$AB,$EA,$AE,$AA,$BA,$AB // $43 dg_dirt_a
+    .byte $AE,$AA,$EA,$AB,$AA,$BA,$AA,$AE // $44 dg_dirt_b
+    .byte $AA,$8A,$A2,$AA,$2A,$A2,$AA,$8A // $45 dg_dirt_hole
+    .byte $88,$22,$88,$22,$88,$22,$88,$22 // $46 dg_dirt_dark
+    .byte $00,$20,$00,$02,$00,$80,$00,$08 // $47 dg_under_a
+    .byte $00,$02,$00,$20,$00,$08,$00,$80 // $48 dg_under_b
+    .byte $A8,$AA,$A8,$A0,$A8,$AA,$A0,$A8 // $49 dg_cliff_r
+    .byte $00,$13,$D1,$77,$DD,$77,$DD,$77 // $4A dg_reeds
+    .byte $FF,$FF,$33,$FF,$FF,$CC,$FF,$FF // $4B dg_water_a
+    .byte $FF,$CF,$FF,$F3,$FF,$FF,$3F,$FF // $4C dg_water_b
+    .byte $44,$FF,$FF,$CF,$FF,$F3,$FF,$FF // $4D dg_water_top
+    .byte $FF,$FF,$FF,$00,$00,$00,$00,$00 // $4E dg_torii_beam
+    .byte $00,$FF,$FF,$00,$00,$00,$00,$00 // $4F dg_torii_beam2
+    .byte $0F,$3F,$FF,$00,$00,$00,$00,$00 // $50 dg_torii_end_l
+    .byte $F0,$FC,$FF,$00,$00,$00,$00,$00 // $51 dg_torii_end_r
+    .byte $3C,$3C,$3C,$3C,$3C,$3C,$3C,$3C // $52 dg_torii_post
+    .byte $14,$14,$55,$00,$00,$00,$00,$00 // $53 dg_torii_base
+    .byte $3C,$3C,$3C,$3C,$30,$0C,$00,$00 // $54 dg_banner_a
+    .byte $AA,$AA,$EE,$AA,$00,$00,$00,$00 // $55 dg_beam_h
+    .byte $2E,$2E,$2E,$2E,$2E,$2E,$2E,$2E // $56 dg_beam_v
+    .byte $FF,$AA,$AE,$AA,$BA,$AA,$00,$00 // $57 dg_plank
+    .byte $3F,$2A,$2B,$2A,$2E,$2A,$00,$00 // $58 dg_plank_l
+    .byte $FC,$A8,$B8,$A8,$AC,$A8,$00,$00 // $59 dg_plank_r
+    .byte $FF,$AA,$AE,$AB,$AA,$BA,$AA,$AB // $5A dg_floor_a
+    .byte $AA,$AE,$AA,$AB,$AA,$AE,$AA,$BA // $5B dg_floor_b
+    .byte $FF,$C3,$C3,$FF,$C3,$C3,$FF,$00 // $5C dg_panel
+    .byte $04,$04,$3F,$FF,$FF,$FF,$3F,$0C // $5D dg_lantern_top
+    .byte $00,$28,$AA,$28,$00,$00,$00,$00 // $5E dg_stone
+    .byte $04,$04,$04,$04,$04,$04,$04,$04 // $5F dg_rope
+    .byte $0F,$3F,$FF,$FF,$FF,$FF,$FF,$FF // $60 dg_moon_tl
+    .byte $F0,$FC,$FF,$FF,$FF,$FF,$FF,$FF // $61 dg_moon_tr
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$3F,$0F // $62 dg_moon_bl
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FC,$F0 // $63 dg_moon_br
+
+game_bg_charset_end:
+    .fill 256*8 - (game_bg_charset_end - game_bg_charset), $00
+
+* = $3000
+right0:
+    // Sprite imported from sprites/pixellab (1).txt (sprite 1)
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$30,$00,$00
+    .byte $fc,$00,$00,$d4,$00,$03,$d8,$00
+    .byte $0c,$10,$00,$00,$96,$00,$02,$aa
+    .byte $90,$02,$a6,$80,$00,$b8,$00,$00
+    .byte $28,$00,$00,$3f,$00,$00,$ae,$00
+    .byte $00,$aa,$80,$02,$82,$80,$02,$80
+    .byte $a0,$0a,$00,$a0,$07,$00,$d0,$81
+
+// sprite 2 / multicolor / color: $01
+right1:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$30,$00,$00
+    .byte $fc,$00,$00,$d4,$00,$0f,$d8,$00
+    .byte $00,$10,$00,$00,$94,$00,$00,$a9
+    .byte $00,$00,$aa,$40,$00,$ab,$00,$00
+    .byte $28,$00,$00,$3f,$00,$00,$ae,$00
+    .byte $00,$aa,$00,$00,$aa,$80,$00,$2a
+    .byte $00,$00,$ae,$00,$00,$71,$00,$81
+
+// sprite 3 / multicolor / color: $01
+right2:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$30,$00,$00
+    .byte $fc,$00,$0c,$d4,$00,$03,$d8,$00
+    .byte $00,$10,$00,$00,$94,$00,$02,$aa
+    .byte $90,$02,$aa,$c0,$00,$a8,$00,$00
+    .byte $28,$00,$00,$3f,$00,$00,$ae,$00
+    .byte $02,$aa,$00,$02,$aa,$80,$0a,$82
+    .byte $80,$0e,$02,$80,$01,$03,$40,$81
+
+// sprite 4 / multicolor / color: $01
+left0:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$0c,$00,$00
+    .byte $3f,$00,$00,$17,$00,$00,$27,$c0
+    .byte $00,$04,$30,$00,$96,$00,$06,$aa
+    .byte $80,$02,$9a,$80,$00,$2e,$00,$00
+    .byte $28,$00,$00,$fc,$00,$00,$ba,$00
+    .byte $02,$aa,$00,$02,$82,$80,$0a,$02
+    .byte $80,$0a,$00,$a0,$07,$00,$d0,$81
+
+// sprite 5 / multicolor / color: $01
+left1:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$0c,$00,$00
+    .byte $3f,$00,$00,$17,$00,$00,$27,$f0
+    .byte $00,$04,$00,$00,$16,$00,$00,$6a
+    .byte $00,$01,$aa,$00,$00,$ea,$00,$00
+    .byte $28,$00,$00,$fc,$00,$00,$ba,$00
+    .byte $00,$aa,$00,$02,$aa,$00,$00,$a8
+    .byte $00,$00,$ba,$00,$00,$4d,$00,$81
+
+// sprite 6 / multicolor / color: $01
+left2:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$0c,$00,$00
+    .byte $3f,$00,$00,$17,$30,$00,$27,$c0
+    .byte $00,$04,$00,$00,$16,$00,$06,$aa
+    .byte $80,$03,$aa,$80,$00,$2a,$00,$00
+    .byte $28,$00,$00,$fc,$00,$00,$ba,$00
+    .byte $00,$aa,$80,$02,$aa,$80,$02,$82
+    .byte $a0,$02,$80,$b0,$01,$c0,$40,$81    
+
+// sprite 7 / multicolor / color: $01
+rightk:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$30,$00,$00
+    .byte $fc,$00,$00,$d4,$40,$00,$d8,$80
+    .byte $03,$12,$83,$0c,$96,$89,$02,$aa
+    .byte $09,$02,$aa,$28,$0a,$28,$28,$2c
+    .byte $2e,$a0,$10,$3e,$80,$00,$ae,$80
+    .byte $00,$aa,$00,$02,$80,$00,$02,$80
+    .byte $00,$0a,$00,$00,$07,$00,$00,$81
+
+// sprite 8 / multicolor / color: $01
+leftk:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$0c,$00,$00
+    .byte $3f,$00,$01,$17,$00,$02,$27,$00
+    .byte $c2,$84,$c0,$62,$96,$30,$60,$aa
+    .byte $80,$28,$aa,$80,$28,$28,$a0,$0a
+    .byte $b8,$38,$02,$bc,$04,$02,$ba,$00
+    .byte $00,$aa,$00,$00,$02,$80,$00,$02
+    .byte $80,$00,$00,$a0,$00,$00,$d0,$81
+
+// sprite 9 / multicolor / color: $01
+rightkn:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$0f,$00
+    .byte $03,$3f,$c0,$00,$f5,$c0,$00,$06
+    .byte $40,$00,$95,$80,$02,$a4,$00,$0a
+    .byte $a8,$24,$08,$2a,$a4,$08,$af,$80
+    .byte $08,$bb,$80,$04,$2a,$a0,$02,$a8
+    .byte $a8,$0a,$a8,$a0,$07,$28,$d0,$81
+
+// sprite 10 / multicolor / color: $01
+leftkn:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$f0,$00
+    .byte $03,$fc,$c0,$03,$5f,$00,$01,$90
+    .byte $00,$02,$56,$00,$00,$1a,$80,$18
+    .byte $2a,$a0,$1a,$a8,$20,$02,$fa,$20
+    .byte $02,$ee,$20,$0a,$a8,$10,$2a,$2a
+    .byte $80,$0a,$2a,$a0,$07,$28,$d0,$81    
+
+// sprite 11 / multicolor / color: $01
+rightd:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$01,$00,$04,$09,$00
+    .byte $48,$2b,$00,$88,$20,$30,$a0,$a1
+    .byte $e1,$a0,$a9,$e1,$ab,$eb,$d5,$fb
+    .byte $a8,$d7,$ab,$80,$3e,$2b,$00,$81
+
+// sprite 12 / multicolor / color: $01
+leftd:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$40,$00,$00,$60,$10,$00,$e8
+    .byte $21,$00,$08,$22,$00,$4a,$0a,$0c
+    .byte $6a,$0a,$4b,$eb,$ea,$4b,$2a,$ea
+    .byte $57,$02,$eb,$d7,$00,$e8,$3c,$81
+
+// sprite 13 / multicolor / color: $01
+rightj:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$3c,$00,$00,$03,$30,$00,$00
+    .byte $fc,$00,$0c,$d4,$60,$18,$d8,$a0
+    .byte $28,$12,$80,$0a,$96,$80,$02,$aa
+    .byte $00,$00,$aa,$00,$00,$28,$00,$00
+    .byte $2f,$a0,$00,$3e,$a8,$02,$ae,$a8
+    .byte $02,$aa,$28,$02,$80,$a0,$00,$b0
+    .byte $a0,$00,$50,$d0,$00,$40,$10,$81
+
+// sprite 14 / multicolor / color: $01
+leftj:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$3c,$00,$0c,$c0,$00
+    .byte $3f,$00,$09,$17,$30,$0a,$27,$24
+    .byte $02,$84,$28,$02,$96,$a0,$00,$aa
+    .byte $80,$00,$aa,$00,$00,$28,$00,$0a
+    .byte $f8,$00,$2a,$bc,$00,$2a,$ba,$80
+    .byte $28,$aa,$80,$0a,$02,$80,$0a,$0e
+    .byte $00,$07,$05,$00,$04,$01,$00,$81
+
+knife1:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$b0,$00,$00,$b0,$00,$00
+    .byte $b0,$3f,$ff,$ff,$2f,$ff,$ff,$0a
+    .byte $aa,$ba,$00,$00,$b0,$00,$00,$b0
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$81
+
+// knife2: exact vertical mirror of knife1 (rows reversed, same multicolor palette)
+knife2:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$b0,$00,$00,$b0,$0a,$aa,$ba
+    .byte $2f,$ff,$ff,$3f,$ff,$ff,$00,$00
+    .byte $b0,$00,$00,$b0,$00,$00,$b0,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$81
+
+boulder1:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$2f,$c0,$00
+    .byte $95,$70,$02,$55,$70,$02,$55,$5c
+    .byte $09,$57,$5c,$09,$55,$dc,$09,$55
+    .byte $dc,$09,$55,$dc,$09,$55,$dc,$09
+    .byte $55,$dc,$09,$55,$dc,$09,$55,$dc
+    .byte $02,$57,$5c,$02,$55,$70,$00,$95
+    .byte $c0,$00,$27,$00,$00,$00,$00,$81
+
+// Boulder rubble: three scattered rock fragments, same multicolor palette as boulder1.
+// Fragment 1: rows 3-5, pairs 2-5 (upper area)
+// Fragment 2: rows 8-10, pairs 6-9 (center-right)
+// Fragment 3: rows 13-16, pairs 1-8 (lower, largest)
+boulder_rubble:
+    .byte $00,$00,$00  // row 0: empty
+    .byte $00,$00,$00  // row 1: empty
+    .byte $00,$00,$00  // row 2: empty
+    .byte $0d,$70,$00  // row 3: frag1 top   [..BLACK,ORG,ORG,BLACK..]
+    .byte $06,$90,$00  // row 4: frag1 mid   [..ORG,WHITE,WHITE,ORG..]
+    .byte $0f,$f0,$00  // row 5: frag1 base  [..BLACK,BLACK,BLACK,BLACK..]
+    .byte $00,$00,$00  // row 6: gap
+    .byte $00,$00,$00  // row 7: gap
+    .byte $00,$0d,$70  // row 8: frag2 top   [....BLACK,ORG,ORG,BLACK..]
+    .byte $00,$06,$90  // row 9: frag2 mid   [....ORG,WHITE,WHITE,ORG..]
+    .byte $00,$0f,$f0  // row 10: frag2 base [....BLACK,BLACK,BLACK,BLACK..]
+    .byte $00,$00,$00  // row 11: gap
+    .byte $00,$00,$00  // row 12: gap
+    .byte $35,$55,$c0  // row 13: frag3 top  [.BLACK,ORG,ORG,ORG,ORG,ORG,ORG,BLACK.]
+    .byte $19,$99,$40  // row 14: frag3 mid1 [.ORG,WHITE,ORG,WHITE,ORG,WHITE,ORG,ORG.]
+    .byte $16,$69,$40  // row 15: frag3 mid2 [.ORG,ORG,WHITE,ORG,WHITE,WHITE,ORG,ORG.]
+    .byte $3f,$ff,$c0  // row 16: frag3 base [.BLACK x8.]
+    .byte $00,$00,$00  // row 17: empty
+    .byte $00,$00,$00  // row 18: empty
+    .byte $00,$00,$00  // row 19: empty
+    .byte $00,$00,$00  // row 20: empty
+    .byte $81
+
+// Kuro boss sprites (multicolor, samurai with sword)
+// Colors: %01=$d025 (light red/skin), %10=sprite color (dark blue armor), %11=$d026 (black outline/sword)
+
+// --- Right-facing set ---
+
+// Kuro walk right frame 0 (standing, feet together)
+kuro_r0:
+    .byte $00,$3c,$00     // row 0:  helmet top
+    .byte $00,$ff,$00     // row 1:  helmet
+    .byte $03,$ff,$c0     // row 2:  helmet wide
+    .byte $00,$57,$00     // row 3:  face (skin %01)
+    .byte $00,$ff,$00     // row 4:  chin guard
+    .byte $03,$aa,$c0     // row 5:  shoulders (armor %10)
+    .byte $0f,$aa,$f0     // row 6:  torso wide
+    .byte $0f,$aa,$f0     // row 7:  torso
+    .byte $0f,$ea,$f0     // row 8:  torso with sash
+    .byte $03,$aa,$c0     // row 9:  waist
+    .byte $03,$aa,$c0     // row 10: waist
+    .byte $03,$ff,$c0     // row 11: belt (black)
+    .byte $03,$aa,$c0     // row 12: hakama top
+    .byte $03,$aa,$c0     // row 13: hakama
+    .byte $0a,$00,$a0     // row 14: legs apart
+    .byte $0a,$00,$a0     // row 15: legs
+    .byte $0a,$00,$a0     // row 16: legs
+    .byte $0a,$00,$a0     // row 17: shins
+    .byte $0f,$00,$f0     // row 18: feet (black boots)
+    .byte $0f,$00,$f0     // row 19: feet
+    .byte $00,$00,$00     // row 20: empty
+    .byte $81
+
+// Kuro walk right frame 1 (left foot forward)
+kuro_r1:
+    .byte $00,$3c,$00
+    .byte $00,$ff,$00
+    .byte $03,$ff,$c0
+    .byte $00,$57,$00
+    .byte $00,$ff,$00
+    .byte $03,$aa,$c0
+    .byte $0f,$aa,$f0
+    .byte $0f,$aa,$f0
+    .byte $0f,$ea,$f0
+    .byte $03,$aa,$c0
+    .byte $03,$aa,$c0
+    .byte $03,$ff,$c0
+    .byte $03,$aa,$c0
+    .byte $02,$aa,$80
+    .byte $02,$80,$a0     // left leg forward
+    .byte $02,$80,$a0
+    .byte $0a,$02,$80
+    .byte $0a,$02,$80
+    .byte $0f,$00,$f0
+    .byte $3c,$00,$3c
+    .byte $00,$00,$00
+    .byte $81
+
+// Kuro walk right frame 2 (right foot forward)
+kuro_r2:
+    .byte $00,$3c,$00
+    .byte $00,$ff,$00
+    .byte $03,$ff,$c0
+    .byte $00,$57,$00
+    .byte $00,$ff,$00
+    .byte $03,$aa,$c0
+    .byte $0f,$aa,$f0
+    .byte $0f,$aa,$f0
+    .byte $0f,$ea,$f0
+    .byte $03,$aa,$c0
+    .byte $03,$aa,$c0
+    .byte $03,$ff,$c0
+    .byte $03,$aa,$c0
+    .byte $02,$aa,$80
+    .byte $0a,$02,$80     // right leg forward
+    .byte $0a,$02,$80
+    .byte $02,$80,$a0
+    .byte $02,$80,$a0
+    .byte $0f,$00,$f0
+    .byte $3c,$00,$3c
+    .byte $00,$00,$00
+    .byte $81
+
+// Kuro sword strike right
+kuro_rs:
+    .byte $00,$3c,$00
+    .byte $00,$ff,$00
+    .byte $03,$ff,$c0
+    .byte $00,$57,$00
+    .byte $00,$ff,$00
+    .byte $03,$aa,$c0
+    .byte $0f,$aa,$ff     // arm extended with sword
+    .byte $0f,$aa,$ff
+    .byte $0f,$ea,$ff     // sword blade
+    .byte $03,$aa,$ff
+    .byte $03,$aa,$fc
+    .byte $03,$ff,$c0
+    .byte $03,$aa,$c0
+    .byte $03,$aa,$c0
+    .byte $0a,$00,$a0
+    .byte $0a,$00,$a0
+    .byte $0a,$00,$a0
+    .byte $0a,$00,$a0
+    .byte $0f,$00,$f0
+    .byte $0f,$00,$f0
+    .byte $00,$00,$00
+    .byte $81
+
+// Kuro death right (falling backward)
+kuro_rd:
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$3c,$00
+    .byte $00,$ff,$00
+    .byte $03,$d7,$c0
+    .byte $0f,$ff,$f0
+    .byte $0f,$ea,$f0
+    .byte $3f,$aa,$fc
+    .byte $0a,$ff,$a0
+    .byte $0a,$aa,$a0
+    .byte $0f,$0f,$f0
+    .byte $81
+
+// --- Left-facing set ---
+
+// Kuro walk left frame 0
+kuro_l0:
+    .byte $00,$3c,$00
+    .byte $00,$ff,$00
+    .byte $03,$ff,$c0
+    .byte $00,$d5,$00     // face mirrored
+    .byte $00,$ff,$00
+    .byte $03,$aa,$c0
+    .byte $0f,$aa,$f0
+    .byte $0f,$aa,$f0
+    .byte $0f,$ab,$f0
+    .byte $03,$aa,$c0
+    .byte $03,$aa,$c0
+    .byte $03,$ff,$c0
+    .byte $03,$aa,$c0
+    .byte $03,$aa,$c0
+    .byte $0a,$00,$a0
+    .byte $0a,$00,$a0
+    .byte $0a,$00,$a0
+    .byte $0a,$00,$a0
+    .byte $0f,$00,$f0
+    .byte $0f,$00,$f0
+    .byte $00,$00,$00
+    .byte $81
+
+// Kuro walk left frame 1
+kuro_l1:
+    .byte $00,$3c,$00
+    .byte $00,$ff,$00
+    .byte $03,$ff,$c0
+    .byte $00,$d5,$00
+    .byte $00,$ff,$00
+    .byte $03,$aa,$c0
+    .byte $0f,$aa,$f0
+    .byte $0f,$aa,$f0
+    .byte $0f,$ab,$f0
+    .byte $03,$aa,$c0
+    .byte $03,$aa,$c0
+    .byte $03,$ff,$c0
+    .byte $03,$aa,$c0
+    .byte $02,$aa,$80
+    .byte $0a,$02,$80
+    .byte $0a,$02,$80
+    .byte $02,$80,$a0
+    .byte $02,$80,$a0
+    .byte $0f,$00,$f0
+    .byte $3c,$00,$3c
+    .byte $00,$00,$00
+    .byte $81
+
+// Kuro walk left frame 2
+kuro_l2:
+    .byte $00,$3c,$00
+    .byte $00,$ff,$00
+    .byte $03,$ff,$c0
+    .byte $00,$d5,$00
+    .byte $00,$ff,$00
+    .byte $03,$aa,$c0
+    .byte $0f,$aa,$f0
+    .byte $0f,$aa,$f0
+    .byte $0f,$ab,$f0
+    .byte $03,$aa,$c0
+    .byte $03,$aa,$c0
+    .byte $03,$ff,$c0
+    .byte $03,$aa,$c0
+    .byte $02,$aa,$80
+    .byte $02,$80,$a0
+    .byte $02,$80,$a0
+    .byte $0a,$02,$80
+    .byte $0a,$02,$80
+    .byte $0f,$00,$f0
+    .byte $3c,$00,$3c
+    .byte $00,$00,$00
+    .byte $81
+
+// Kuro sword strike left
+kuro_ls:
+    .byte $00,$3c,$00
+    .byte $00,$ff,$00
+    .byte $03,$ff,$c0
+    .byte $00,$d5,$00
+    .byte $00,$ff,$00
+    .byte $03,$aa,$c0
+    .byte $ff,$aa,$f0     // arm extended with sword (left)
+    .byte $ff,$aa,$f0
+    .byte $ff,$ab,$f0
+    .byte $ff,$aa,$c0
+    .byte $3f,$aa,$c0
+    .byte $03,$ff,$c0
+    .byte $03,$aa,$c0
+    .byte $03,$aa,$c0
+    .byte $0a,$00,$a0
+    .byte $0a,$00,$a0
+    .byte $0a,$00,$a0
+    .byte $0a,$00,$a0
+    .byte $0f,$00,$f0
+    .byte $0f,$00,$f0
+    .byte $00,$00,$00
+    .byte $81
+
+// Kuro death left
+kuro_ld:
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$3c,$00
+    .byte $00,$ff,$00
+    .byte $03,$d5,$c0
+    .byte $0f,$ff,$f0
+    .byte $0f,$ab,$f0
+    .byte $3f,$aa,$fc
+    .byte $0a,$ff,$a0
+    .byte $0a,$aa,$a0
+    .byte $0f,$f0,$f0
+    .byte $81
+
+// ============================================================
+// Lung dragon boss sprites  (multicolor, Y-expanded, sprite slot 5)
+// Colors: $d025=yellow($07)  $d026=black($00)  sprite-color=red($02)
+// Bit-pairs: %00=transparent  %01=yellow  %10=sprite-color(red)  %11=multicolor2(black)
+// Sprites from spritemate 4/5/2026
+// ============================================================
+
+* = $3700
+// Lung walk left frame 0
+lung_l0:
+    .byte $01,$40,$00,$02,$b0,$00,$06,$a0
+    .byte $00,$0a,$ac,$00,$19,$eb,$00,$2b
+    .byte $ab,$00,$2a,$aa,$00,$16,$1b,$00
+    .byte $0e,$1a,$00,$16,$1b,$00,$08,$18
+    .byte $1b,$00,$60,$6a,$05,$a0,$aa,$1a
+    .byte $80,$b2,$1a,$c1,$b0,$1a,$c6,$b0
+    .byte $1a,$ca,$c0,$1b,$9a,$c0,$0a,$ab
+    .byte $00,$02,$eb,$00,$07,$1b,$00,$82
+
+* = $3740
+// Lung walk left frame 1
+lung_l1:
+    .byte $01,$40,$00,$02,$b0,$00,$06,$a0
+    .byte $00,$0a,$ac,$00,$19,$eb,$00,$2b
+    .byte $ab,$00,$2a,$aa,$00,$16,$1b,$0b
+    .byte $0e,$1a,$1a,$16,$1b,$6a,$08,$18
+    .byte $6b,$00,$60,$b0,$05,$a0,$a0,$1a
+    .byte $80,$b0,$1a,$c1,$b0,$1a,$c6,$b0
+    .byte $1a,$ca,$c0,$1b,$9a,$c0,$0b,$2b
+    .byte $00,$2c,$2c,$00,$6c,$6c,$00,$82
+
+* = $3780
+// Lung walk left frame 2
+lung_l2:
+    .byte $01,$40,$00,$02,$b0,$00,$06,$a0
+    .byte $00,$0a,$ac,$00,$19,$eb,$00,$2b
+    .byte $ab,$00,$2a,$aa,$00,$16,$1b,$00
+    .byte $0e,$1a,$00,$16,$1b,$00,$08,$18
+    .byte $00,$00,$60,$1b,$05,$a0,$6b,$1a
+    .byte $80,$aa,$1a,$c1,$a2,$1a,$c6,$b0
+    .byte $1a,$ca,$c0,$0a,$9a,$00,$02,$ab
+    .byte $c0,$00,$aa,$b0,$01,$b1,$ac,$82
+
+* = $37c0
+// Lung fire pose left
+lung_fl:
+    .byte $01,$40,$00,$02,$b0,$00,$06,$e0
+    .byte $00,$0b,$ac,$00,$1d,$eb,$00,$2b
+    .byte $ab,$00,$1a,$aa,$00,$06,$1b,$00
+    .byte $0e,$1a,$00,$0e,$1b,$00,$04,$18
+    .byte $1b,$10,$60,$6a,$05,$a0,$aa,$1a
+    .byte $80,$b2,$1a,$c1,$b0,$1a,$c6,$b0
+    .byte $1a,$ca,$c0,$1b,$9a,$c0,$0a,$ab
+    .byte $00,$02,$eb,$00,$07,$1b,$00,$82
+
+* = $3800
+// Lung walk right frame 0
+lung_r0:
+    .byte $00,$01,$40,$00,$0e,$80,$00,$0a
+    .byte $90,$00,$3a,$a0,$00,$eb,$64,$00
+    .byte $ea,$e8,$00,$aa,$a8,$00,$e4,$94
+    .byte $00,$a4,$b0,$00,$e4,$94,$e4,$24
+    .byte $20,$a9,$09,$00,$aa,$0a,$50,$8e
+    .byte $02,$a4,$0e,$43,$a4,$0e,$93,$a4
+    .byte $03,$a3,$a4,$03,$a6,$e4,$00,$ea
+    .byte $a0,$00,$eb,$80,$00,$e4,$d0,$82
+
+* = $3840
+// Lung walk right frame 1
+lung_r1:
+    .byte $00,$01,$40,$00,$0e,$80,$00,$0a
+    .byte $90,$00,$3a,$a0,$00,$eb,$64,$00
+    .byte $ea,$e8,$00,$aa,$a8,$e0,$e4,$94
+    .byte $a4,$a4,$b0,$a9,$e4,$94,$e9,$24
+    .byte $20,$0e,$09,$00,$0a,$0a,$50,$0e
+    .byte $02,$a4,$0e,$43,$a4,$0e,$93,$a4
+    .byte $03,$a3,$a4,$03,$a6,$e4,$00,$e8
+    .byte $e0,$00,$38,$38,$00,$39,$39,$82
+
+* = $3880
+// Lung walk right frame 2
+lung_r2:
+    .byte $00,$01,$40,$00,$0e,$80,$00,$0a
+    .byte $90,$00,$3a,$a0,$00,$eb,$64,$00
+    .byte $ea,$e8,$00,$aa,$a8,$00,$e4,$94
+    .byte $00,$a4,$b0,$00,$e4,$94,$00,$24
+    .byte $20,$e4,$09,$00,$e9,$0a,$50,$aa
+    .byte $02,$a4,$8a,$43,$a4,$0e,$93,$a4
+    .byte $03,$a3,$a4,$00,$a6,$a0,$03,$ea
+    .byte $80,$0e,$aa,$00,$3a,$4e,$40,$82
+
+* = $38c0
+// Lung fire pose right
+lung_fr:
+    .byte $00,$01,$40,$00,$0e,$80,$00,$0b
+    .byte $90,$00,$3a,$e0,$00,$eb,$74,$00
+    .byte $ea,$e8,$00,$aa,$a4,$00,$e4,$90
+    .byte $00,$a4,$b0,$00,$e4,$b0,$e4,$24
+    .byte $10,$a9,$09,$04,$aa,$0a,$50,$8e
+    .byte $02,$a4,$0e,$43,$a4,$0e,$93,$a4
+    .byte $03,$a3,$a4,$03,$a6,$e4,$00,$ea
+    .byte $a0,$00,$eb,$80,$00,$e4,$d0,$82
+
+* = $3900
+// Lung death frame  (collapsed — kept from original design)
+lung_ld:
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $00,$00,$00
+    .byte $03,$ff,$f0  // head fallen
+    .byte $0f,$d5,$fc  // head + belly
+    .byte $3f,$55,$ff  // belly
+    .byte $ff,$55,$ff  // full body
+    .byte $ff,$55,$fc  // body
+    .byte $ff,$54,$f0  // body narrowing
+    .byte $fc,$50,$c0  // tail start
+    .byte $f0,$00,$00  // tail
+    .byte $c0,$00,$00  // tail tip
+    .byte $00,$00,$00
+    .byte $82
+
+// ============================================================
+// Lung fireball sprites  (multicolor, single-height, slots 6 & 7)
+// Left-travelling fireballs: lung_fbl0/1
+// Right-travelling fireballs: lung_fbr0/1
+// Colors: $d025=yellow($07)  $d026=black($00)  sprite-color=red($02)
+// ============================================================
+
+* = $3940
+// Lung fireball left frame 0
+lung_fbl0:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$aa,$00
+    .byte $02,$aa,$82,$02,$5a,$a0,$01,$95
+    .byte $98,$02,$5a,$a0,$02,$aa,$80,$00
+    .byte $aa,$08,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$82
+
+* = $3980
+// Lung fireball left frame 1
+lung_fbl1:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$aa,$00
+    .byte $02,$aa,$80,$02,$9a,$a2,$02,$65
+    .byte $98,$02,$9a,$a0,$02,$aa,$82,$00
+    .byte $aa,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$82
+
+* = $39c0
+// Lung fireball right frame 0
+lung_fbr0:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$aa,$00
+    .byte $82,$aa,$80,$0a,$a5,$80,$26,$56
+    .byte $40,$0a,$a5,$80,$02,$aa,$80,$20
+    .byte $aa,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$82
+
+* = $3a00
+// Lung fireball right frame 1
+lung_fbr1:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$aa,$00
+    .byte $02,$aa,$80,$8a,$a6,$80,$26,$59
+    .byte $80,$0a,$a6,$80,$82,$aa,$80,$00
+    .byte $aa,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$82
+
+// Logo map data: 15x6 cells, 8 bits per cell (90 bytes)
+map_data:
+	.byte $00,$01,$02,$03,$04,$03,$05,$03,$06,$07,$08,$09,$0a,$0b,$00
+	.byte $00,$0c,$0d,$0e,$0f,$10,$11,$12,$13,$14,$15,$16,$17,$18,$00
+	.byte $19,$1a,$1b,$1c,$1d,$1e,$1f,$20,$21,$22,$23,$24,$25,$26,$27
+	.byte $00,$00,$28,$29,$2a,$2b,$2c,$2d,$2e,$2f,$30,$31,$32,$00,$00
+	.byte $00,$00,$33,$34,$35,$36,$37,$38,$39,$3a,$3b,$3c,$00,$00,$00
+	.byte $00,$3d,$3e,$3f,$00,$40,$41,$42,$43,$44,$00,$45,$46,$00,$00

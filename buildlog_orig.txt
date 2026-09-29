@@ -1,0 +1,38 @@
+Output dir: /home/pabes/Projects/c64stuff/./bin
+parsing
+flex pass 1
+flex pass 2
+flex pass 3
+Output pass
+Writing prg file: main.prg
+
+Memory Map
+----------
+Default-segment:
+  $0801-$080d Basic
+  $080e-$080d Basic End
+  $2000-$2237 Unnamed
+  $2800-$2fff Unnamed
+  $3000-$36ff Unnamed
+  $3700-$373f Unnamed
+  $3740-$377f Unnamed
+  $3780-$37bf Unnamed
+  $37c0-$37ff Unnamed
+  $3800-$383f Unnamed
+  $3840-$387f Unnamed
+  $3880-$38bf Unnamed
+  $38c0-$38ff Unnamed
+  $3900-$393f Unnamed
+  $3940-$397f Unnamed
+  $3980-$39bf Unnamed
+  $39c0-$39ff Unnamed
+  $3a00-$3a99 Unnamed
+  $4000-$42d0 Unnamed
+  $5000-$51ea Unnamed
+  $5200-$56c3 Unnamed
+  $6000-$77a8 Unnamed
+  $7800-$7eec Unnamed
+  $8000-$8503 Unnamed
+
+Writing Vice symbol file: main.vs
+Writing Symbol file: main.sym

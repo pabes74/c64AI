@@ -3,7 +3,7 @@
 $vicePath = "..\SDL2VICE-3.10-win64\c1541.exe"
 $prgFolder = "prg"
 $d64Folder = "d64"
-$d64File = Join-Path $d64Folder "c64stuff.d64"
+$d64File = Join-Path $d64Folder "aifist.d64"
 
 Write-Host "Creating/overwriting $d64File with all PRG files from $prgFolder..."
 
@@ -14,7 +14,7 @@ if (!(Test-Path $d64Folder)) {
 }
 
 # Create/overwrite D64 image
-& $vicePath -format "c64stuff,01" d64 $d64File
+& $vicePath -format "aifist,01" d64 $d64File
 
 Get-ChildItem -Path $prgFolder -Filter *.prg | ForEach-Object {
     $baseName = $_.BaseName.ToLower()

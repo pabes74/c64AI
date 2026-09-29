@@ -1,0 +1,44 @@
+name: PR Quiz
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  models: read
+  checks: write
+
+jobs:
+  qaizle-quiz:
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    uses: pabes74/Qaizle/.github/workflows/copilot-pr-quiz.yml@main
+    with:
+      pr-number: ${{ github.event.pull_request.number }}
+      repository: ${{ github.repository }}
+      model: openai/gpt-4.1-mini
+      pass-threshold: 3
+      # Optional: switch to Claude instead of Copilot/GitHub Models.
+      # provider: claude
+      # claude-model: claude-haiku-4-5
+    # secrets:
+    #   anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  qaizle-evaluate:
+    if: >
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '/quiz-answers')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pabes74/Qaizle/.github/actions/evaluate-quiz@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          pr-number: ${{ github.event.issue.number }}
+          comment-body: ${{ github.event.comment.body }}
+          commenter-login: ${{ github.event.comment.user.login }}

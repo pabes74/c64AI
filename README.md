@@ -55,6 +55,10 @@ The VS Code task `Build kickass main.asm` (Ctrl+Shift+B) wraps this command. F5 
 
 Check `buildlog.txt` for `Error` lines after every build. There are no automated tests; validation is always manual in VICE (`x64sc`).
 
+### Pull request quiz
+
+Every non-draft pull request gets a 5-question reviewer quiz from [Qaizle](https://github.com/pabes74/Qaizle) (`.github/workflows/pr-quiz.yml`). Answer by commenting `/quiz-answers A B C D A` on the PR; 3 of 5 correct passes the "Copilot PR Quiz" check.
+
 ---
 
 ## Running

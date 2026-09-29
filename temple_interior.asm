@@ -1213,6 +1213,11 @@ ti_sl2_wait:
     jsr key_space_pressed
     beq ti_sl2_wait             // 0 = not pressed; loop until pressed
 
+    // level-clear bonus (+500) — HUD is redrawn by game_start's init_hud
+    lda #$00
+    ldx #PTS_LEVEL_MID
+    jsr score_add
+
     // advance level counter — hero exits the temple, so the next scrolling
     // section begins at the incremented level
     inc current_level

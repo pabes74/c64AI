@@ -46,6 +46,7 @@ main.asm
        └─ .import source "sid/soundfx.asm"
   └─ .import source "temple_interior.asm"
   └─ .import source "music.asm"
+  └─ .import source "highscore.asm"        // own origin at $4800
 ```
 
 ---

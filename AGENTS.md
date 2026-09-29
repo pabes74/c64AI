@@ -48,6 +48,7 @@ main.asm
        └─ .import source "sid/soundfx.asm"
   └─ .import source "temple_interior.asm"
   └─ .import source "music.asm"
+  └─ .import source "highscore.asm"        // own origin at $4800
 ```
 
 ### Module roles
@@ -61,6 +62,7 @@ main.asm
 | `temple_interior.asm` | Level 2 interior room |
 | `music.asm` | Original SID composition (3-voice) |
 | `sid/soundfx.asm` | SFX routines using SID voice 2 only |
+| `highscore.asm` | Session top-5 highscore table, initials entry screen |
 
 ### Memory map
 
@@ -69,7 +71,8 @@ main.asm
 | `$2000` | `LogoChars` — custom charset for intro logo |
 | `$2800` | `game_bg_charset` — 11-tile background tileset |
 | `$3000`+ | Sprite bitmaps |
-| `$4000` | `start` — intro entry point |
+| `$4000` | `start` — intro entry point (`title_after_game_over` — return from game over) |
+| `$4800` | `highscore.asm` — `hs_*` routines and table |
 | `$6000` | `game_start` — game entry point |
 | `music.location` | SID file |
 
@@ -96,7 +99,7 @@ Screen RAM: `$0400`. Color RAM: `$d800`. Sprite 0 pointer: `$07f8`.
 - `snake_case` — e.g., `game_start`, `draw_background_window`, `check_kuro_kick_hit`
 - Local branch targets within a routine use descriptive suffixes: `_done`, `_loop`, `_ok`, `_skip`, `_set`
   - e.g., `bg_row_loop`, `bg_src_no_wrap`, `anim_wait_next_tick`
-- Module-prefix on exported labels: `bg_`, `ti_` (temple interior), `cv_` (charview), `sfx_`, `kuro_`
+- Module-prefix on exported labels: `bg_`, `ti_` (temple interior), `cv_` (charview), `sfx_`, `kuro_`, `hs_` (highscore)
 - Music state variables use `m_` prefix: `m_tick`, `m_v1pos`, `m_arp_phase`
 
 ### Data variables

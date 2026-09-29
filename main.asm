@@ -5,6 +5,7 @@ BasicUpstart2(start)
 .import source "game.asm"
 .import source "temple_interior.asm"
 .import source "music.asm"
+.import source "highscore.asm"
 
 .const MUSIC_INIT = music_init
 .const MUSIC_PLAY = music_play
@@ -37,10 +38,34 @@ BasicUpstart2(start)
 .const MSG_LEN = msg_end - msg
 .const MAXPOS  = MSG_LEN - 40    // last valid start column
 
+.const TITLE_CYCLE_JIFFIES = 500 // ~10 s (PAL) between scroller and highscore table
+
 
 // Entry point
 * = $4000
 start:
+    jsr title_init
+    lda #$00                    // boot: open with the scroller
+    sta title_mode
+    jmp title_entry
+
+// Game over lands here: highscore check / initials entry, then the title
+// loop opening on the highscore table.
+title_after_game_over:
+    jsr title_init
+    lda #$ff
+    sta hs_new_slot
+    jsr hs_check_qualifies
+    bcc tago_show
+    jsr hs_insert
+    jsr hs_enter_initials
+tago_show:
+    lda #$01
+    sta title_mode
+    jmp title_entry
+
+// VIC, logo, music and raster IRQ setup shared by all title entries.
+title_init:
     // Reset VIC to text mode (loading screen leaves bitmap mode on)
     lda #$1b
     sta $d011                   // $d011: text mode, screen on, 25 rows
@@ -66,10 +91,6 @@ start:
     // Clear the screen
     jsr $e544
 
-    // Reset level counter — start always means a fresh run (boot or game over)
-    lda #$01
-    sta current_level
-
     // Use custom charset at $2000 with screen at $0400
     // $d018: bits 4-7 = screen / $0400, bits 1-3 = chars / $0800
     // screen=$0400 -> 1, chars=$2000 -> 4 -> %0001 1000 = $18
@@ -79,9 +100,6 @@ start:
     jsr blank_background_chars
     jsr draw_logo
     jsr color_logo
-
-    // draw static info text under scroller
-    jsr draw_static_text
 
     // init SID music
     jsr MUSIC_INIT
@@ -136,15 +154,24 @@ start:
 
     lda #$00
     sta scroll_pos
+    rts
+
+// Draw the current title_mode and enter the title loop.
+title_entry:
+    jsr title_draw_mode
 
 main_loop:
+    lda title_mode
+    bne main_skip_scroll        // highscore table: no scroller
     jsr draw_text
+main_skip_scroll:
     jsr delay
     jsr check_space
     bne no_space
     jmp start_game
 
 no_space:
+    jsr title_tick
     inc scroll_pos
     lda scroll_pos
     cmp #MAXPOS+1
@@ -180,6 +207,67 @@ text3_end:
 
 scroll_pos:
     .byte 0
+
+title_mode:
+    .byte 0            // 0 = scroller + credits, 1 = highscore table
+
+title_start_lo:
+    .byte 0            // jiffy clock ($a2/$a1) when the current mode was drawn
+title_start_hi:
+    .byte 0
+title_elapsed_lo:
+    .byte 0
+
+
+// title_draw_mode — redraw the lower screen for title_mode and restart
+// the cycle timer.  Sprite 0 is hidden over the table.
+title_draw_mode:
+    sei                         // read the jiffy clock atomically
+    lda $a2
+    sta title_start_lo
+    lda $a1
+    sta title_start_hi
+    cli
+
+    jsr hs_clear_lower
+    lda title_mode
+    beq tdm_scroller
+
+    lda $d015                   // hide sprite 0 — it overlaps the table
+    and #%11111110
+    sta $d015
+    jmp hs_draw_table
+
+tdm_scroller:
+    lda $d015                   // show sprite 0 again
+    ora #%00000001
+    sta $d015
+    jmp draw_static_text
+
+
+// title_tick — switch title_mode once TITLE_CYCLE_JIFFIES have elapsed.
+title_tick:
+    sei
+    lda $a2
+    sec
+    sbc title_start_lo
+    sta title_elapsed_lo
+    lda $a1
+    sbc title_start_hi          // A = elapsed hi
+    cli
+    cmp #>TITLE_CYCLE_JIFFIES
+    bcc title_tick_done
+    bne title_tick_toggle
+    lda title_elapsed_lo
+    cmp #<TITLE_CYCLE_JIFFIES
+    bcc title_tick_done
+title_tick_toggle:
+    lda title_mode
+    eor #$01
+    sta title_mode
+    jsr title_draw_mode
+title_tick_done:
+    rts
 
 irq_state:
     .byte 0
@@ -268,6 +356,17 @@ text3_col_loop:
 
 
 start_game:
+    // fresh run: reset level and score (kept until now so game over can
+    // show them on the highscore screens)
+    lda #$01
+    sta current_level
+    lda #$00
+    sta score
+    sta score+1
+    sta score+2
+    lda #$ff
+    sta hs_new_slot              // no highlighted entry any more
+
     sei
 
     // restore default KERNAL IRQ vector and disable raster IRQs

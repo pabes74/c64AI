@@ -275,6 +275,15 @@
 .const HUD_DIGIT0_CHAR   = $23            // base screen code for digit '0'
 .const HUD_LEVEL_COLOR   = $07            // yellow — visible on both cyan ($03) and black ($00) backgrounds
 
+// Score HUD (row 24, cols 23–28 — gap between "LVL:N" and the boss HUD)
+.const HUD_SCORE_COL     = 23
+.const HUD_SCORE_LEN     = 6              // 6 BCD digits
+
+// Points, middle BCD byte (x100): passed in X to score_add with A = $00
+.const PTS_BOSS_HIT_MID  = $01            // 100
+.const PTS_BOSS_KILL_MID = $10            // 1000
+.const PTS_LEVEL_MID     = $05            // 500
+
 // Projectiles (using sprites 1-4)
 .const PROJ_COUNT = 4
 .const PROJ_INACTIVE = $00
@@ -901,6 +910,10 @@ check_lung_kick_hit:
     jsr sfx_hit
     dec boss_hp
     jsr draw_boss_life
+    lda #$00
+    ldx #PTS_BOSS_HIT_MID          // +100 per landed kick
+    jsr score_add
+    jsr draw_hud_score
 
     // check death
     lda boss_hp
@@ -909,6 +922,10 @@ check_lung_kick_hit:
     sta lung_state
     lda #LUNG_LD_PTR
     sta $07fd
+    lda #$00
+    ldx #PTS_BOSS_KILL_MID         // +1000 for defeating Lung
+    jsr score_add
+    jsr draw_hud_score
     jsr open_temple_door
     jmp clk_exit
 
@@ -1264,7 +1281,7 @@ game_start:
     sta player_hp
     lda #BOSS_LIFE_MAX
     sta boss_hp
-    // current_level is NOT reset here — it is set to 1 at start (main.asm)
+    // current_level and score are NOT reset here — they are reset in start_game (main.asm)
     // and incremented when the hero exits the temple (ti_show_level2)
 
     // Set background color based on current level; border is black (Dusk).
@@ -2835,6 +2852,10 @@ check_kuro_kick_hit:
     jsr sfx_hit
     dec boss_hp
     jsr draw_boss_life
+    lda #$00
+    ldx #PTS_BOSS_HIT_MID          // +100 per landed kick
+    jsr score_add
+    jsr draw_hud_score
     // trigger recoil
     lda #KURO_STATE_RECOIL
     sta kuro_state
@@ -2855,6 +2876,10 @@ ckk_recoil_set:
     sta kuro_state
     lda #KURO_LD_PTR
     sta $07fd
+    lda #$00
+    ldx #PTS_BOSS_KILL_MID         // +1000 for defeating Kuro
+    jsr score_add
+    jsr draw_hud_score
     jsr open_temple_door   // reveal black entrance between the middle pillars
 ckk_exit:
     rts
@@ -2893,6 +2918,7 @@ init_hud_blank_boss_zone:
     bne init_hud_blank_boss_zone
     jsr draw_hud_life
     jsr draw_hud_level
+    jsr draw_hud_score             // after draw_hud_level: that one blanks cols 15–29
     rts
 
 
@@ -2955,6 +2981,69 @@ dhl_blank:
     sta HUD_COLOR_ADDR + HUD_LEVEL_COL + 3
     sta HUD_COLOR_ADDR + HUD_LEVEL_COL + 4
     rts
+
+
+// draw_hud_score — write the 6-digit BCD score at HUD_SCORE_COL (cols 23–28).
+// Uses the game-charset digit glyphs (HUD_DIGIT0_CHAR + n).  Trashes A, X, Y.
+draw_hud_score:
+    ldx #$00                       // score byte index (0 = most significant)
+    ldy #$00                       // screen column offset
+dhs_loop:
+    lda score,x
+    lsr
+    lsr
+    lsr
+    lsr                            // high nibble
+    clc
+    adc #HUD_DIGIT0_CHAR
+    sta HUD_SCREEN_ADDR + HUD_SCORE_COL,y
+    lda #HUD_LEVEL_COLOR
+    sta HUD_COLOR_ADDR  + HUD_SCORE_COL,y
+    iny
+    lda score,x
+    and #$0f                       // low nibble
+    clc
+    adc #HUD_DIGIT0_CHAR
+    sta HUD_SCREEN_ADDR + HUD_SCORE_COL,y
+    lda #HUD_LEVEL_COLOR
+    sta HUD_COLOR_ADDR  + HUD_SCORE_COL,y
+    iny
+    inx
+    cpx #3
+    bne dhs_loop
+    rts
+
+
+// score_add — add packed-BCD points to score (3 bytes, big-endian).
+// In: A = low BCD byte (tens/units), X = middle BCD byte (x100).
+// Caps at 999999.  Does not redraw the HUD (the temple level-clear screen
+// uses it too).  Trashes A.
+score_add:
+    stx score_tmp
+    php
+    sei                            // KERNAL IRQ does not cld — keep it out of decimal mode
+    sed
+    clc
+    adc score+2
+    sta score+2
+    lda score+1
+    adc score_tmp
+    sta score+1
+    lda score
+    adc #$00
+    sta score
+    cld
+    bcc score_add_done
+    lda #$99                       // overflow past 999999 → cap
+    sta score
+    sta score+1
+    sta score+2
+score_add_done:
+    plp                            // restore caller's I flag
+    rts
+
+score_tmp:
+    .byte $00
 
 
 show_boss_hud:
@@ -3297,6 +3386,10 @@ kuro_player_kicks_boss:
     jsr sfx_hit
     dec boss_hp
     jsr draw_boss_life
+    lda #$00
+    ldx #PTS_BOSS_HIT_MID          // +100 per landed kick
+    jsr score_add
+    jsr draw_hud_score
     lda #30
     sta kuro_hit_cooldown
     // Kuro recoils
@@ -3322,6 +3415,10 @@ kuro_die:
     sta kuro_state
     lda #KURO_LD_PTR
     sta $07fd
+    lda #$00
+    ldx #PTS_BOSS_KILL_MID         // +1000 for defeating Kuro
+    jsr score_add
+    jsr draw_hud_score
     jsr open_temple_door   // reveal black entrance between the middle pillars
     jmp update_kuro_done
 
@@ -3549,8 +3646,8 @@ game_over_count_chk:
     bcc game_over_wait             // not yet 240 ticks
 
 game_over_done:
-    // return to title screen
-    jmp start
+    // return to title screen via the highscore check / initials entry
+    jmp title_after_game_over
 
  // --- Game-over SID jingle — Japanese koto style --------------------------
  // In-scale (Japanese pentatonic minor) descending phrase with ornament,
@@ -3877,6 +3974,9 @@ door_open:
 
 current_level:
     .byte 1                        // 1-based level counter; shown in HUD centre
+
+score:
+    .byte $00, $00, $00            // packed BCD, big-endian (score+0 = most significant)
 
 // background (sky) color per level — indexed by current_level (1-based → subtract 1)
 // Dusk Silhouette: blue night sky ($06) for every level.
